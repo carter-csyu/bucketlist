@@ -1,0 +1,87 @@
+.BucketList .page-header i {
+  margin-left: 10px;
+}
+
+.BucketList .content {
+  margin-top: 1rem;
+}
+
+.BucketList .content .input-field {
+  margin-top: 0;
+  margin-bottom: 0;
+  display: flex;
+}
+
+.BucketList .content .input-field input {
+  flex: 1;
+  margin-top: 0;
+  margin-left: 1rem;
+  margin-right: 1rem;
+}
+
+
+.BucketList .content .input-field i {
+  padding-top: 10px;
+}
+
+.BucketList .content .hr {
+  width: 100%;
+  height: 1px;
+  float: left;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.bucketlist-collection {
+  border: 0;
+}
+
+.bucketlist-item {
+  background: inherit !important;
+  display: flex;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+}
+
+.bucketlist-item:hover .left-icon{
+  opacity: 1;
+}
+
+.bucketlist-item .item-name {
+  flex: 1;
+  padding-left: 1rem;
+  line-height: 1.8
+}
+
+.bucketlist-item .item-name.active {
+  text-decoration: line-through;
+}
+
+.bucketlist-item .left-icon {
+  float: left;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.bucketlist-item .right-icon {
+  float: right;
+  cursor: pointer;
+}
+
+.btn-create {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.open-range {
+  display: flex;
+}
+
+.open-range label {
+  flex: 1;
+}
+
+[type="radio"]:checked + span:after, [type="radio"].with-gap:checked + span:after {
+  background-color: #3949ab !important;
+  border-color: #3949ab !important;
+}

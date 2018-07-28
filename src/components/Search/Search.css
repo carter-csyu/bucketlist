@@ -1,0 +1,15 @@
+.search-bar {
+  height: 46px;
+  line-height: 46px;
+  box-shadow: none;
+  border-bottom: 1px solid #eeeeee;
+}
+
+nav .nav-wrapper i {
+  height: 46px;
+  line-height: 46px;
+}
+
+nav .nav-wrapper input {
+  color: white;
+}

@@ -1,0 +1,56 @@
+
+.main {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+
+.main main {
+  flex: 1 0 auto;
+}
+
+.page-header {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eeeeee;
+  display: flex;
+  height: 46px;
+}
+
+.page-header .logo {
+  margin-left: 10px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  font-family: merienda;
+  color: #1a237e;
+}
+
+.page-header .title {
+  margin-left: 10px;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.footer {
+  display: flex;
+  padding: 0;
+  border-top: 1px solid #eeeeee; 
+}
+
+.footer-items {
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.footer-items .material-icons:hover {
+  color: #3949ab !important;
+  cursor: pointer;
+}
+
+.footer-items .material-icons.active {
+  color: #3949ab !important;
+}

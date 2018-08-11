@@ -1,0 +1,158 @@
+.article-wrapper {
+  border-top: 1px solid #e0e0e0;
+  margin-bottom: 20px;
+}
+
+.article-wrapper header.writer {
+  padding: 16px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.article-wrapper header.writer img {
+  height: 30px;
+  width: 30px;
+}
+
+.article-wrapper header.writer .username {
+  margin-left: 5px;
+  flex: 1;
+}
+
+.article-wrapper header.writer .btn-more {
+  display: flex;
+  align-items: center;
+}
+
+.article-wrapper header.writer .dropdown-content {
+  width: 200px !important;
+}
+
+.info-title, .info-content {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.info-title {
+  margin-top: 6px;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+.info-content .collection .bucketlist-item span {
+  font-weight: 600;
+  padding-right: 6px;
+}
+
+.view-more {
+  text-align: center;
+  cursor: pointer;
+}
+
+.article-footer {
+  height: 30px;
+  align-items: center;
+  display: flex;
+  margin-left: 4px;
+  margin-right: 4px;
+}
+
+.article-footer i {
+  padding-left: 6px;
+  padding-right: 6px;
+  height: 24px;
+}
+
+.footer-flex {
+  flex: 1;
+}
+
+.indicator-item {
+    height: 6px;
+    width: 6px;
+    background-color: #dbdbdb;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.indicator-item.active {
+  background-color: #1a237e;
+}
+
+.info .carousel .indicators {
+  height: 30px;
+  margin-bottom: 10px;
+}
+
+.article-likes {
+  font-weight: 600;
+  padding: 4px;
+  padding-left: 10px;
+}
+
+.article-comments {
+  padding: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.article-comments .comment {
+  display: flex;
+  height: 24px;
+}
+
+.article-comments .comment-nickname {
+  font-weight: 600;
+}
+
+.article-comments .comment-content {
+  flex: 1;
+}
+
+.article-comments .comment-remove-icon {
+  cursor: pointer;
+  opacity: 0;
+}
+
+.article-comments:hover .comment-remove-icon {
+  opacity: 1;
+}
+
+.article-comment-input {
+  display: flex;
+  padding: 4px;
+  padding-left: 10px;
+  padding-right: 10px;
+  align-items: center;
+  opacity: 0;
+  height: 0;
+}
+
+.article-comment-input.active {
+  opacity: 1;
+  height: 60px;
+}
+
+.article-comment-input input {
+  flex: 1;
+}
+
+.article-wrapper .upload-images {
+  height: 180px !important;
+  min-height: 180px !important;
+}
+
+.article-wrapper .upload-images .carousel-item {
+  height: inherit;
+  min-height: inherit;
+  text-align: center;
+}
+
+.article-wrapper .upload-images .carousel-item img {
+  height: inherit;
+  min-height: inherit;
+}

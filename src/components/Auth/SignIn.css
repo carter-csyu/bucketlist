@@ -1,27 +1,10 @@
-.SignIn {
-  background-color: white;
-  max-width: 380px;
-  margin: 0 auto;
-  margin-top: 4rem;
-  border: 1px solid #e0e0e0;
+.SignIn .content {
+  padding-top: 2rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.header {
-  text-align: center;
-  font-weight: 100;
-}
-
-.header h3 {
-  padding: 1rem;
-  font-family: merienda;
-}
-
-.content {
-  padding-left: 2rem;
-  padding-right: 2rem;
-}
-
-.hr {
+.SignIn .hr {
   width: 100%;
   height: 1px;
   float: left;
@@ -29,25 +12,24 @@
   margin-bottom: 1rem;
 }
 
-.btn-signin {
+.SignIn .btn {
   width: 100%;
+  height: 48px;
+  text-transform: none; 
 }
 
-.btn-signin.facebook {
+.SignIn .facebook {
   text-transform: none;
   margin-top: 1rem;
 }
 
-.btn-signup {
-  width: 100%;
-  text-transform: none;
-}
-
-.reset-password {
-  margin-top: 1rem;
+.SignIn .reset-password {
+  display: flex;
   font-size: 0.9rem;
+  margin-top: 1rem;
 }
 
-.reset-password a {
+.SignIn .reset-password a {
+  flex: 1;
   cursor: pointer;
 }

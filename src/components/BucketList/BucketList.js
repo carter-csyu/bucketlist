@@ -4,6 +4,9 @@ import './BucketList.css';
 import BucketItem from './BucketItem';
 
 const BucketList = ({
+  history,
+
+  mode,
   title,
   value,
   items,
@@ -35,13 +38,17 @@ const BucketList = ({
   return (
     <div className="BucketList">
       <header className="page-header">
-        <i className="material-icons indigo-text darken-4">arrow_back</i>
-        <div className="title">버킷리스트 작성하기</div>
+        <i 
+          className="back-btn material-icons indigo-text darken-4"
+          onClick={() => {
+            history.goBack();
+          }}>arrow_back</i>
+        <div className="title">버킷리스트 {`${mode === "new" ? "작성하기" : "수정하기"}`}</div>
       </header>
       <div className="content">
         <h5>제목</h5>
+        <div className="input-field">
         <input 
-            text="item" 
             type="text" 
             name="title"
             className="validate" 
@@ -50,23 +57,23 @@ const BucketList = ({
             onChange={onChange}
             onKeyDown={onKeyDown}
           />
+        </div>
 
         {/* 버킷리스트 등록 */}
         <h5>버킷리스트 항목</h5>
-        <div className="input-field">
-          <i className="material-icons">add</i>
+        <div className="input-field bucket-field">
           <input 
-            text="item" 
             type="text" 
             name="value"
             className="validate" 
             placeholder="새로운 항목 입력"
+            autoComplete="off"
             value={value}
             onChange={onChange}
             onKeyDown={onKeyDown}
           />
           <button 
-            className="waves-effect waves-light btn light-blue darken-1"
+            className="waves-effect waves-light btn indigo darken-4"
             onClick={onClickAdd} 
           >추가</button>
         </div>
@@ -85,7 +92,7 @@ const BucketList = ({
         <h5>완료기한</h5>
         <input 
           type="text" 
-          className="datepicker" 
+          className="datepicker validate" 
           name="dueDate"
           ref={ ref => onSetDatepicker(ref) }
           value={dueDate}
@@ -99,21 +106,21 @@ const BucketList = ({
               checked={openRange === "1"} 
               onChange={onChangeOpenRange}
             />
-            <span className="black-text">전체공개</span>
+            <span className="radio-text black-text">전체공개</span>
           </label>
           <label>
             <input name="open-range" type="radio" value="2" 
               checked={openRange === "2"} 
               onChange={onChangeOpenRange}
             />
-            <span className="black-text">팔로워공개</span>
+            <span className="radio-text black-text">팔로워공개</span>
           </label>
           <label>
             <input name="open-range" type="radio" value="3" 
               checked={openRange === "3"}  
               onChange={onChangeOpenRange}
             />
-            <span className="black-text">나만보기</span>
+            <span className="radio-text black-text">나만보기</span>
           </label>
         </div>
 
@@ -124,7 +131,9 @@ const BucketList = ({
             className="waves-effect waves-light btn light-blue darken-1 btn-create"
             onClick={onCreate}
           >
-            등록
+            {
+              mode === "new" ? '등록' : '수정'
+            }
           </button>
         </div>
       </div>
@@ -134,6 +143,8 @@ const BucketList = ({
 };
 
 BucketList.propTypes = {
+  mode: PropTypes.string,
+  title: PropTypes.string,
   value: PropTypes.string,
   items: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.number,
@@ -153,6 +164,8 @@ BucketList.propTypes = {
 };
 
 BucketList.defaultProps = {
+  title: '',
+  mode: 'new',
   value: '',
   items: [],
   dueDate: '',

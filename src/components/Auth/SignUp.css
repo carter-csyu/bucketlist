@@ -1,66 +1,42 @@
-.SignUp {
-  background-color: white;
-  max-width: 380px;
-  margin: 0 auto;
-  margin-top: 4rem;
-  border: 1px solid #e0e0e0;
+
+.SignUp .content {
+  padding-top: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
-.LogIn {
-  background-color: white;
-  max-width: 380px;
-  padding: 1.5rem;
-  margin: 0 auto;
-  margin-top: 0.7rem; 
-  border: 1px solid #e0e0e0;
-}
-
-.LogIn a {
-  cursor: pointer;
-}
-
-.header {
-  text-align: center;
-  font-weight: 100;
-}
-
-.header h3 {
-  padding: 1rem;
-  font-family: merienda;
-}
-
-.content {
-  padding-left: 2rem;
-  padding-right: 2rem;
-}
-
-.hr {
+.SignUp .hr {
   width: 100%;
   height: 1px;
-  float: left;
   margin-top: 1rem;
   margin-bottom: 1rem;
 }
 
-.btn-signin {
-  width: 100%;
-}
-
-.btn-signin.facebook {
-  text-transform: none;
+.SignUp .form-fields {
+  margin-top: 1rem;
   margin-top: 1rem;
 }
 
-.btn-signup {
+.SignUp .facebook-btn, .SignUp .signup-btn {
   width: 100%;
+  height: 48px;
   text-transform: none;
 }
 
-.reset-password {
-  margin-top: 1rem;
-  font-size: 0.9rem;
+.SignUp .dup-btn {
+  height: 44px;
+  text-transform: none;
 }
 
-.reset-password a {
-  cursor: pointer;
+.SignUp .exist-account {
+  margin-top: 2rem;
+}
+
+.SignUp .additional-inputs {
+  display: flex;
+}
+
+.SignUp .additional-inputs input {
+  flex: 1;
+  margin-right: 10px;
 }

@@ -1,0 +1,36 @@
+.PostWrite .content {
+  padding: 1rem;
+}
+
+.PostWrite .filebox {
+  border-top: 1px
+}
+
+.PostWrite .filebox input[type="file"] {
+  position: absolute; 
+  width: 1px; 
+  height: 1px; 
+  padding: 0; 
+  margin: -1px; 
+  overflow: hidden; 
+  clip: rect(0,0,0,0); border: 0; 
+}
+
+.PostWrite .upload-images {
+  height: 180px !important;
+  min-height: 180px !important;
+}
+
+.PostWrite .upload-images .carousel-item {
+  min-height: inherit !important;
+}
+
+.PostWrite .btn {
+  width: 100%;
+  height: 48px;
+  margin-top: 1rem;
+}
+
+.PostWrite .btn.btn-imageupload {
+  padding-top: 5px;
+}

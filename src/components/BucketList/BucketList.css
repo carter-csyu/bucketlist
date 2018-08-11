@@ -1,87 +1,89 @@
-.BucketList .page-header i {
-  margin-left: 10px;
+ .BucketList .content {
+  padding: 1rem;
 }
 
-.BucketList .content {
-  margin-top: 1rem;
-}
-
-.BucketList .content .input-field {
+.BucketList .input-field {
   margin-top: 0;
   margin-bottom: 0;
   display: flex;
 }
 
-.BucketList .content .input-field input {
+.BucketList .bucket-field input {
   flex: 1;
   margin-top: 0;
-  margin-left: 1rem;
-  margin-right: 1rem;
+  margin-right: 10px;
 }
 
-
-.BucketList .content .input-field i {
+.BucketList .bucket-field i {
   padding-top: 10px;
 }
 
-.BucketList .content .hr {
-  width: 100%;
-  height: 1px;
-  float: left;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+.BucketList .btn-create {
+  height: 48px;
 }
 
-.bucketlist-collection {
+.BucketList .bucketlist-collection {
   border: 0;
 }
 
-.bucketlist-item {
+.BucketList .bucketlist-item {
   background: inherit !important;
   display: flex;
-  padding-left: 1rem !important;
-  padding-right: 1rem !important;
+  padding-left: 10px !important;
+  padding-right: 1px !important;
 }
 
-.bucketlist-item:hover .left-icon{
+.BucketList .bucketlist-item:hover .left-icon{
   opacity: 1;
 }
 
-.bucketlist-item .item-name {
+.BucketList .bucketlist-item .item-name {
   flex: 1;
-  padding-left: 1rem;
+  padding-left: 10px;
   line-height: 1.8
 }
 
-.bucketlist-item .item-name.active {
+.BucketList .bucketlist-item .item-name.active {
   text-decoration: line-through;
 }
 
-.bucketlist-item .left-icon {
+.BucketList .bucketlist-item .left-icon {
   float: left;
   opacity: 0;
   cursor: pointer;
 }
 
-.bucketlist-item .right-icon {
+.BucketList .bucketlist-item .right-icon {
   float: right;
   cursor: pointer;
 }
 
-.btn-create {
+.BucketList .btn-create {
   margin-top: 1rem;
   width: 100%;
 }
 
-.open-range {
+.BucketList .open-range {
   display: flex;
 }
 
-.open-range label {
+.BucketList .open-range label {
   flex: 1;
 }
 
 [type="radio"]:checked + span:after, [type="radio"].with-gap:checked + span:after {
-  background-color: #3949ab !important;
-  border-color: #3949ab !important;
+  background-color: #1a237e !important;
+  border-color: #1a237e !important;
+}
+
+.BucketList .datepicker-date-display {
+  background-color: #1a237e;
+}
+
+.BucketList .datepicker-table td.is-selected {
+  background-color: #1a237e;
+}
+
+.BucketList .datepicker-footer button {
+  color: #1a237e;
 }

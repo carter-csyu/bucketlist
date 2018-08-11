@@ -1,45 +1,66 @@
 import React, { Component } from 'react';
 import Main from 'components/Main';
 
-import Home from 'components/Home';
-import Search from 'components/Search';
-import Status from 'components/Status';
+import HomeContainer from 'containers/Home/HomeContainer';
+import SearchContainer from 'containers/Search/SearchContainer';
+import StatusContainer from 'containers/Status/StatusContainer';
 import Mentoring from 'components/Mentoring';
 import MyMenu from 'components/MyMenu';
 
 class MainContainer extends Component {
   state = {
-    active: 1
+    active: '/home'
   }
 
-  handleClickMenu = (index) => {
+  handleClickMenu = (url) => {
     this.setState({
-      active: index
+      active: url
     });
   }
+
+  handleUpdateLink = () => {
+    const { match } = this.props;
+
+    this.handleClickMenu(match.url);
+  }
   
+  static getDerivedStateFromProps(nextProps, prevState) {
+    if (nextProps.match.url !== prevState.active) {
+      return {
+        active: nextProps.match.url
+      }
+    }
+    
+    return null;
+  }
+  
+  componentDidMount() {
+    this.handleUpdateLink();
+  }
+
   render() {
     const { active } = this.state;
     const {
       handleClickMenu
     } = this;
 
-    const content = active === 1
-      ? (<Home />)
-      : active === 2
-      ? (<Search />)
-      : active === 3
-      ? (<Status />)
-      : active === 4
+    const content = active === "/"
+      ? (<HomeContainer />)
+      : active === '/home'
+      ? (<HomeContainer />)
+      : active === '/search'
+      ? (<SearchContainer />)
+      : active === '/status'
+      ? (<StatusContainer />)
+      : active === '/mentoring'
       ? (<Mentoring />)
-      : active === 5
+      : active === '/mypage'
       ? (<MyMenu />)
       : (<div>Noting in here</div>);
 
     return (
       <Main
         active={active}
-        onClickMenu={handleClickMenu}
         content={content}
       />
     );

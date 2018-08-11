@@ -1,22 +1,19 @@
 import React, { Component } from 'react';
 import BucketList from 'components/BucketList';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as bucketlistActions from 'store/modules/bucketlist';
 
 class BucketListcontainer extends Component {
   state = {
+    mode: 'new',
+    id: -1,
+    writer: {
+
+    },
     title: '',
     value: '',
-    id: 3,
-    /*
-    items: [{
-      id: 1,
-      name: "광교산 등교하기",
-      done: false
-    }, {
-      id: 2,
-      name: "영화 10편 이상 보기",
-      done: true
-    }],
-    */
+    id: 1,
     items: [],
     dueDate: '2018-12-31',
     openRange: '1'
@@ -47,10 +44,6 @@ class BucketListcontainer extends Component {
         done: false
       }),
       id: id + 1
-    });
-
-    window.M.toast({
-      html: '등록 완료'
     });
   }
 
@@ -95,13 +88,14 @@ class BucketListcontainer extends Component {
 
     console.log( year, month, date );
   }
-
+  
   handleCreate = () => {
-    const { title, items, dueDate } = this.state;
+    const { mode, id, title, items, dueDate, openRange } = this.state;
+    const { BucketlistActions } = this.props;
 
     if (title === null || title === "") {
       window.M.toast({
-        html: '제목을 입력 후 다시 시도 바랍니다.'
+        html: '제목을 입력 후 다시 시도 바랍니다'
       });
       return;
     }
@@ -116,30 +110,96 @@ class BucketListcontainer extends Component {
 
     if (dueDate === null || dueDate === "") {
       window.M.toast({
-        html: '완료기한을 입력 후 다시 시도 바랍니다.'
+        html: '완료기한을 입력 후 다시 시도 바랍니다'
       });
 
       return;
     }
 
-    window.M.toast({
-      html: '등록처리'
-    });
-  }
+    const dueDateArr = dueDate.split("-");
+    const dueDateObj = new Date(dueDateArr[0], Number(dueDateArr[1]) + 1, dueDateArr[2]);
 
+    
+    if ( mode === "new") {
+      BucketlistActions.createBucketlistRequest(
+        title, 
+        items, 
+        dueDate: dueDateObj,
+        openRange
+      ).then(
+        () => {
+          const { create } = this.props;
+          if (create.status === "SUCCESS") {
+            window.M.toast({
+              html: '성공적으로 등록되었습니다'
+            });
+            
+            this.setState({
+              title: '',
+              items: [],
+              dueDate: '2018-08-09',
+              openRange: '1'
+            });
+            
+          } else {
+            window.M.toast({
+              html: create.error.message
+            });
+          }
+        }
+      );
+    } else {
+      BucketlistActions.editBucketlistRequest(
+        id,
+        title,
+        items,
+        dueDate: dueDateObj,
+        openRange
+      ).then(
+        () => {
+          const { edit } = this.props;
+          if (edit.status === "SUCCESS") {
+            window.M.toast({
+              html: '성공적으로 수정되었습니다'
+            });
+            
+            this.setState({
+              title: '',
+              items: [],
+              dueDate: '2018-08-09',
+              openRange: '1'
+            });
+            
+          } else {
+            window.M.toast({
+              html: edit.error.message
+            }); 
+          }
+        }
+      );
+
+    }
+  }
+  
   handleChangeOpenRange = (e) => {
     this.setState({
       openRange: e.target.value
     });
   }
-
+  
   componentDidMount() {
+    const { history, match } = this.props;
+    const { BucketlistActions } = this.props;
+    
     // crate instance Datepicker
     const instance = window.M.Datepicker.init(this.datepicker, {
       autoClose: true,
       format: 'yyyy-mm-dd',
-      onSelect: this.handleDueDateSelect,
+      onSelect:  this.handleDueDateSelect,
       i18n: {
+        cancel: '취소',
+        clear: '초기화',
+        done: '확인',
         months: [
           '1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'
         ],
@@ -157,10 +217,31 @@ class BucketListcontainer extends Component {
         ]
       }
     });
+
+
+    if (match.path === "/bucketlist/edit/:id") {
+      const { id } = match.params;
+      
+      BucketlistActions.getBucketlistRequest(id).then(
+        () => {
+          const { info } = this.props.data;
+          this.setState({
+            mode: 'edit',
+            writer: info.writer,
+            id: info._id,
+            title: info.title,
+            items: info.items,
+            dueDate: info.dueDate,
+            openRange: info.openRange
+          });
+        }
+      );
+    }
   }
 
   render() {
-    const { title, value, items, dueDate, openRange } = this.state;
+    const { history } = this.props;
+    const { mode, title, value, items, dueDate, openRange } = this.state;
     const {
       handleChange,
       handleKeyDown,
@@ -174,7 +255,9 @@ class BucketListcontainer extends Component {
 
     return (
       <div>
-        <BucketList 
+        <BucketList
+          history={history}
+          mode={mode}
           title={title}
           value={value}
           items={items}
@@ -194,4 +277,13 @@ class BucketListcontainer extends Component {
   }
 }
 
-export default BucketListcontainer;
+export default connect(
+  ({bucketlist}) => ({
+    create: bucketlist.create,
+    edit: bucketlist.edit,
+    data: bucketlist.data
+  }),
+  (dispatch) => ({
+    BucketlistActions: bindActionCreators(bucketlistActions, dispatch)
+  })
+)(BucketListcontainer);

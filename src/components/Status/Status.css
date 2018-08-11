@@ -1,0 +1,21 @@
+
+.Status .collection {
+  margin-top: 0;
+}
+
+.Status .collection .collection-item {
+  min-height: 42px;
+}
+
+.Status .collection .collection-item .alert-date {
+  font-size: 0.9rem;
+}
+
+.Status .collection .collection-item:hover {
+  background-color: #e1f5fe ;
+}
+
+.Status .collection .collection-item.active {
+  background-color: #1a237e;
+  color: #ffffff;
+}

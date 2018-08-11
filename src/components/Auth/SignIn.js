@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import './SignIn.css';
 
 const SignIn = ({
@@ -8,71 +9,65 @@ const SignIn = ({
     onChange, 
     onKeyDown,
     onClickSignin,
-    onClickSignup,
     onClickResetPw,
     onLoadPassword
   }) => {
   return (
     <div className="SignIn">
-      <div className="header">
-        <h3>Bucket list</h3>
-      </div>
+      <header className="page-header center-align">
+        <div className="logo">Bucket list</div>
+      </header>
       <div className="content">
-        <div className="row">
-          <form className="col s12">
-            <div className="input-field">
-              <input id="email" text="email" type="email" className="validate" 
-                name="email"
-                value={email}
-                onChange={onChange}
-                onKeyDown={onKeyDown} 
-              />
-              <label htmlFor="email">이메일</label>
-            </div>
-            <div className="input-field">
-              <input id="password" text="password" type="password" className="validate" 
-                name="password"
-                ref={ ref => {
-                  onLoadPassword(ref); 
-                }}
-                value={password} 
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-              />
-              <label htmlFor="password">비밀번호</label>
-            </div>
-          </form>
-          <div className="col s12">
-            <button 
-              className="waves-effect waves-light btn light-blue darken-3 btn-signin"
-              onClick={() => onClickSignin()}
-            >
-              로그인
-            </button>
-          </div>
-          <div className="col s12">
-            <button 
-            className="waves-effect waves-light btn indigo darken-1 btn-signin facebook"
-            onClick={() => onClickSignin('facebook')}
-            >
-              Facebook으로 로그인
-            </button>
-          </div>
-          <div className="col s12 center-align reset-password">
-            <a 
-              className="black-text darken-4"
-              onClick={onClickResetPw}
-              >비밀번호를 잊으셨나요?</a>
-          </div>
-          <div className="grey lighten-1 hr"></div>
-          <div className="col s12">
-            <button 
-            className="waves-effect waves-light btn light-blue darken-1 btn-signup"
-            onClick={onClickSignup}  
-            >
-              회원가입
-            </button>
-          </div>
+        <div className="input-field">
+          <input id="email" text="email" type="email" className="validate" 
+            name="email"
+            value={email}
+            onChange={onChange}
+            onKeyDown={onKeyDown} 
+          />
+          <label htmlFor="email">이메일</label>
+        </div>
+        <div className="input-field">
+          <input id="password" text="password" type="password" className="validate" 
+            name="password"
+            ref={ ref => {
+              onLoadPassword(ref); 
+            }}
+            value={password} 
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+          />
+          <label htmlFor="password">비밀번호</label>
+        </div>
+        <div className="col s12">
+          <button 
+            className="waves-effect waves-light btn light-blue darken-3"
+            onClick={() => onClickSignin()}
+          >
+            로그인
+          </button>
+        </div>
+        <div className="col s12">
+          <button 
+          className="waves-effect waves-light btn indigo darken-1 facebook"
+          onClick={() => onClickSignin('facebook')}
+          >
+            Facebook으로 로그인
+          </button>
+        </div>
+        <div className="col s12 center-align reset-password">
+          <a 
+            className="black-text darken-4"
+            onClick={onClickResetPw}
+            >비밀번호를 잊으셨나요?</a>
+        </div>
+        <div className="grey lighten-1 hr"></div>
+        <div className="col s12">
+          <Link to="/signup">
+          <button className="waves-effect waves-light btn light-blue darken-1">
+            회원가입
+          </button>
+          </Link>
         </div>
       </div>
     </div>

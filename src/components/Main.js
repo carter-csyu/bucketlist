@@ -5,8 +5,7 @@ import Bottom from './Bottom';
 
 const Main = ({
   active,
-  content,
-  onClickMenu
+  content
 }) => {
   return (
     <div className="main">
@@ -15,22 +14,19 @@ const Main = ({
       </main>
       <Bottom 
         active={active}
-        onClickMenu={onClickMenu}
       />
     </div>
   )
 };
 
 Main.propTypes = {
-  active: PropTypes.number,
+  active: PropTypes.string,
   content: PropTypes.element,
-  onClickMenu: PropTypes.func
 };
 
 Main.defaultProps = {
   active: 1,
-  content: (<div>이게뭐야</div>),
-  onClickMenu: () => console.warn('onClickMenu not defined')
+  content: (<div>이게뭐야</div>)
 };
 
 export default Main;

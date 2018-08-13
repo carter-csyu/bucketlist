@@ -10,12 +10,8 @@ const Account = new Schema({
   nickname: String,
   bio: String,
   profileImage: String,
-  followers: [{
-    _id: { type: Schema.Types.ObjectId, ref: 'account' }
-  }],
-  followees: [{
-    _id: { type: Schema.Types.ObjectId, ref: 'account' }
-  }],
+  followers: [{ type: Schema.Types.ObjectId, ref: 'account' }],
+  followees: [{ type: Schema.Types.ObjectId, ref: 'account' }],
   created: { type: Date, default: Date.now },
   modified: Date,
   deprecated: Date

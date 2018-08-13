@@ -14,6 +14,14 @@ const GET_POST = 'post/GET_POST';
 const GET_POST_SUCCESS = 'post/GET_POST_SUCCESS';
 const GET_POST_FAILURE = 'post/GET_POST_FAILURE';
 
+const GET_POSTS = 'post/GET_POSTS';
+const GET_POSTS_SUCCESS = 'post/GET_POSTS_SUCCESS';
+const GET_POSTS_FAILURE = 'post/GET_POSTS_FAILURE';
+
+const DELETE_POST = 'post/DELETE_POST';
+const DELETE_POST_SUCCESS = 'post/DELETE_POST_SUCCESS';
+const DELETE_POST_FAILURE = 'post/DELETE_POST_FAILURE';
+
 // 액션 생성 함수
 export const createPostRequest = (title, content, tags, files, openRange) => {
   return (dispatch) => {
@@ -26,25 +34,13 @@ export const createPostRequest = (title, content, tags, files, openRange) => {
       formData.append('files', file, file.name);
     });
 
-    /*
-    return axios.post('/api/post/imageUpload',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data'} }
-    ).then( response => {
-      console.log('imageUpload');
-      console.log(response);
-    }).catch( error => {
-      console.log(error);
-    });
-    */
-
     formData.append('title', title);
     formData.append('content', content);
     formData.append('tags', tags);
     formData.append('files', files);
     formData.append('openRange', openRange);
 
-    return axios.post('/api/post/new', formData)
+    return axios.post('/api/articles/', formData)
     .then( response => {
       // successed
       console.log(response);
@@ -64,8 +60,8 @@ export const editPostRequest = (id, title, content, tags, files, openRange) => {
   return (dispatch) => {
     dispatch(editPost());
 
-    return axios.post('/api/post/edit', {
-      id, title, content, tags, files, openRange
+    return axios.put(`/api/posts/${id}`, {
+      title, content, tags, files, openRange
     }).then( response => {
       // successed
       console.log(response);
@@ -85,7 +81,7 @@ export const getPostRequest = (id) => {
   return (dispatch) => {
     dispatch(getPost());
 
-    return axios.get(`/api/post/edit/${id}`)
+    return axios.get(`/api/posts/${id}`)
       .then( response => {
         // successed
         console.log(response);
@@ -93,13 +89,43 @@ export const getPostRequest = (id) => {
       }).catch( error => {
         // failed
         console.log(error);
-        dispatch(getPostFailure(error.response.data));
+        //dispatch(getPostFailure(error.response.data));
       });
   }
 };
 export const getPost = createAction(GET_POST);
 export const getPostSuccess = createAction(GET_POST_SUCCESS);
 export const getPostFailure = createAction(GET_POST_FAILURE);
+
+export const getPostsRequest = () => {
+  return (dispatch) => {
+    dispatch(getPosts());
+
+    return axios.get('/api/posts/').then( response => {
+      dispatch(getPostsSuccess(response.data));
+    }).catch( error => {
+      dispatch(getPostsFailure(error.response.data));
+    });
+  }
+}
+export const getPosts = createAction(GET_POSTS);
+export const getPostsSuccess = createAction(GET_POSTS_SUCCESS);
+export const getPostsFailure = createAction(GET_POSTS_FAILURE);
+
+export const deletePostRequest = (id) => {
+  return (dispatch) => {
+    dispatch(deletePost());
+
+    return axios.delete(`/api/posts/${id}`).then( response => {
+      dispatch(deletePostSuccess());
+    }).catch( error => {
+      dispatch(deletePostFailure(error.response.data));
+    });
+  }
+}
+export const deletePost = createAction(DELETE_POST);
+export const deletePostSuccess = createAction(DELETE_POST_SUCCESS);
+export const deletePostFailure = createAction(DELETE_POST_FAILURE);
 
 // 초기 상태 정의
 const initialState = {
@@ -111,9 +137,13 @@ const initialState = {
     status: 'INIT',
     error: {}
   },
+  delete: {
+    status: 'INIT',
+    error: {}
+  },
   data: {
     status: 'INIT',
-    info: {},
+    info: [],
     error: {}
   }
 };
@@ -189,17 +219,12 @@ export default handleActions({
     }
   },
   [GET_POST_SUCCESS]: (state, { payload: info }) => {
-    const newInfo = {
-      ...info,
-      dueDate: info.dueDate.slice(0, 10)
-    };
-
     return {
       ...state,
       data: {
         ...state.data,
         status: 'SUCCESS',
-        info: newInfo
+        info: [].concat(info)
       }
     }
   },
@@ -213,4 +238,62 @@ export default handleActions({
       }
     }
   },
+
+  [GET_POSTS]: (state, action) => {
+    return {
+      ...state,
+      data: {
+        ...state.data,
+        status: 'WAITING'
+      }
+    }
+  },
+  [GET_POSTS_SUCCESS]: (state, { payload: datas }) => {
+    return {
+      ...state,
+      data: {
+        ...state.data,
+        status: 'SUCCESS',
+        info: datas
+      }
+    }
+  },
+  [GET_POSTS_FAILURE]: (state, { payload: info }) => {
+    return {
+      ...state,
+      data: {
+        ...state.data,
+        status: 'FAILURE',
+        error: info
+      }
+    }
+  },
+
+  [DELETE_POST]: (state, action) => {
+    return {
+      ...state,
+      delete: {
+        ...state.delete,
+        status: 'WAITING'
+      }
+    };
+  },
+  [DELETE_POST_SUCCESS]: (state, action) => {
+    return {
+      ...state,
+      delete: {
+        ...state.delete,
+        status: 'SUCCESS'
+      }
+    };
+  },
+  [DELETE_POST_FAILURE]: (state, { payload: info }) => {
+    return {
+      ...state,
+      delete: {
+        ...state.delete,
+        status: 'FAILURE'
+      }
+    };
+  }
 }, initialState);

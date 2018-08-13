@@ -1,12 +1,14 @@
 import { Router } from 'express';
 import account from './account';
-import bucketlist from './bucketlist';
-import post from './post';
+import bucketlists from './bucketlists';
+import posts from './posts';
+import articles from './articles';
 
 const router = Router();
 
 router.use('/account', account);
-router.use('/bucketlist', bucketlist);
-router.use('/post', post);
+router.use('/bucketlists', bucketlists);
+router.use('/posts', posts);
+router.use('/articles', articles);
 
 export default router;

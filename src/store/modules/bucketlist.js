@@ -14,12 +14,16 @@ const GET_BUCKETLIST = 'bucketlist/GET_BUCKETLIST';
 const GET_BUCKETLIST_SUCCESS = 'bucketlist/GET_BUCKETLIST_SUCCESS';
 const GET_BUCKETLIST_FAILURE = 'bucketlist/GET_BUCKETLIST_FAILURE';
 
+const GET_BUCKETLISTS = 'bucketlist/GET_BUCKETLISTS';
+const GET_BUCKETLISTS_SUCCESS = 'bucketlist/GET_BUCKETLISTS_SUCCESS';
+const GET_BUCKETLISTS_FAILURE = 'bucketlist/GET_BUCKETLISTS_FAILURE';
+
 // 액션 생성 함수
 export const createBucketlistRequest = (title, items, dueDate, openRange) => {
   return (dispatch) => {
     dispatch(createBucketlist());
 
-    return axios.post('/api/bucketlist/new', {
+    return axios.post('/api/bucketlists', {
       title, items, dueDate, openRange
     }).then( response => {
       // successed
@@ -40,8 +44,8 @@ export const editBucketlistRequest = (id, title, items, dueDate, openRange) => {
   return (dispatch) => {
     dispatch(createBucketlist());
 
-    return axios.post(`/api/bucketlist/edit`, {
-      id, title, items, dueDate, openRange
+    return axios.put(`/api/bucketlists/${id}`, {
+      title, items, dueDate, openRange
     }).then( response => {
       // successed
       console.log(response);
@@ -61,7 +65,7 @@ export const getBucketlistRequest = (id) => {
   return (dispatch) => {
     dispatch(getBucketlist());
 
-    return axios.get(`/api/bucketlist/edit/${id}`)
+    return axios.get(`/api/bucketlists/${id}`)
       .then( response => {
         // successed
         console.log(response);
@@ -77,6 +81,23 @@ export const getBucketlist = createAction(GET_BUCKETLIST);
 export const getBucketlistSuccess = createAction(GET_BUCKETLIST_SUCCESS);
 export const getBucketlistFailure = createAction(GET_BUCKETLIST_FAILURE);
 
+export const getBucketlistsRequest = () => {
+  return (dispatch) => {
+
+    dispatch(getBucketlists());
+
+    return axios.get('/api/bucketlists')
+      .then( response => {
+        dispatch(getBucketlistsSuccess(response.data));
+      }). catch( error => {
+        dispatch(getBucketlistsFailure(error.response.data));
+      });
+  }
+}
+export const getBucketlists = createAction(GET_BUCKETLISTS);
+export const getBucketlistsSuccess = createAction(GET_BUCKETLISTS_SUCCESS);
+export const getBucketlistsFailure = createAction(GET_BUCKETLISTS_FAILURE);
+
 // 초기 상태 정의
 const initialState = {
   create: {
@@ -89,7 +110,7 @@ const initialState = {
   },
   data: {
     status: 'INIT',
-    info: {},
+    info: [],
     error: {}
   }
 };
@@ -174,7 +195,7 @@ export default handleActions({
       data: {
         ...state.data,
         status: 'SUCCESS',
-        info: newInfo
+        info: [].concat(newInfo)
       }
     }
   },
@@ -188,4 +209,39 @@ export default handleActions({
       }
     }
   },
+
+  [GET_BUCKETLISTS]: (state, action) => {
+    return {
+      ...state,
+      data: {
+        ...state.data,
+        status: 'WAITING'
+      }
+    }
+  },
+  [GET_BUCKETLISTS_SUCCESS]: (state, { payload: datas }) => {
+    const newInfo = datas.map( data => ({
+      ...data,
+      dueDate: data.dueDate.slice(0, 10)
+    }));
+    
+    return {
+      ...state,
+      data: {
+        ...state.data,
+        status: 'SUCCESS',
+        info: [].concat(newInfo)
+      }
+    }
+  },
+  [GET_BUCKETLISTS_FAILURE]: (state, { payload: info }) => {
+    return {
+      ...state,
+      data: {
+        ...state.data,
+        status: 'FAILURE',
+        error: info
+      }
+    }
+  }
 }, initialState);

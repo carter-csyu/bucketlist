@@ -8,6 +8,7 @@ class PostContainer extends Component {
   state = {
     mode: '',
     id: -1,
+    writer: {},
     title: '',
     content: '',
     openRange: '1',
@@ -176,6 +177,7 @@ class PostContainer extends Component {
       handleChipAdd,
       handleChipDelete
     } = this;
+    const { match, PostActions } = this.props;
 
     this.setModeType();
 
@@ -187,6 +189,34 @@ class PostContainer extends Component {
     });
 
     this.createCarouselInstance();
+
+    if (match.path === "/post/edit/:id") {
+      const { id } = match.params;
+      
+      PostActions.getPostRequest(id).then(
+        () => {
+          const { info } = this.props.data;
+
+          if (info[0].tags.length > 0) {
+            info[0].tags.forEach(tag => {
+              this.chipInstance.addChip({
+                tag: tag
+              });
+            })
+          }
+
+          this.setState({
+            mode: 'edit',
+            writer: info[0].writer,
+            id: info[0]._id,
+            title: info[0].title,
+            content: info[0].content,
+            tags: info[0].tags,
+            openRange: info[0].openRange
+          });
+        }
+      );
+    }
   }
 
   render() {

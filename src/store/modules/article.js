@@ -1,4 +1,5 @@
 import { createAction, handleActions } from 'redux-actions';
+import axios from 'axios';
 
 // 액션 타입 정의
 const HANDLE_LIKE = 'article/HANDLE_LIKE';
@@ -13,6 +14,10 @@ const ADD_COMMENT = 'article/ADD_COMMENT';
 const REMOVE_COMMENT = 'article/REMOVE_COMMENT'; 
 const VIEW_MORE = 'article/VIEW_MORE';
 
+const GET_ARTICLE = 'article/GET_ARTICLE';
+const GET_ARTICLE_SUCCESS = 'article/GET_ARTICLE_SUCCESS';
+const GET_ARTICLE_FAILURE = 'article/GET_ARTICLE_FAILURE';
+
 // 액션 생성 함수
 export const handleLike = createAction(HANDLE_LIKE, (id, session) => ({id, session}));
 export const handleComment = createAction(HANDLE_COMMENT, id => id);
@@ -25,8 +30,28 @@ export const addComment = createAction(ADD_COMMENT, (id, session) => ({id, sessi
 export const removeComment = createAction(REMOVE_COMMENT, (id, commentId) => ({id, commentId}));
 export const viewMore = createAction(VIEW_MORE, id => id);
 
+export const getArticleRequest = (type, id) => {
+  return (dispatch) => {
+    dispatch(getArticle());
+
+    return axios.get(`/api/articles/${type}/${id}`)
+      .then( response => {
+        console.log(response);
+        dispatch(getArticleSuccess(response.data));
+      }).catch( error => { 
+        console.log(error);
+        dispatch(getArticleFailure(error.response.data));
+      });
+  }
+}
+export const getArticle = createAction(GET_ARTICLE);
+export const getArticleSuccess = createAction(GET_ARTICLE_SUCCESS);
+export const getArticleFailure = createAction(GET_ARTICLE_FAILURE);
+
 // 초기 상태 정의
 const initialState = {
+  status: 'INIT',
+  error: {},
   articles: [
     {
       id: 1,
@@ -58,7 +83,7 @@ const initialState = {
         email: "chunsang.yu@gmail.com",
         nickname: "chunsang.yu",
         content: "어디에 위치한 호수인가요?"
-      }, {
+      }, { 
         id: 1,
         email: "chundol42@github.com",
         nickname: "chundol42",
@@ -276,4 +301,25 @@ export default handleActions({
       ]
     };
   },
+
+  [GET_ARTICLE]: (state, action) => {
+    return ({
+      ...state,
+      status: 'WAITING'
+    });
+  },
+  [GET_ARTICLE_SUCCESS]: (state, { payload: article }) => {
+    return ({
+      ...state,
+      status: 'SUCCESS',
+      articles: [].concat(article)
+    })
+  },
+  [GET_ARTICLE_FAILURE]: (state, { payload: info }) => {
+    return ({
+      ...state,
+      status: 'FAILURE',
+      error: info
+    })
+  }
 }, initialState);

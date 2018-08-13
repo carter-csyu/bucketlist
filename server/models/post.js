@@ -3,16 +3,12 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const Post = new Schema({
-  writer: {
-    _id: { type: Schema.Types.ObjectId, ref: 'account' }
-  },
+  writer: { type: Schema.Types.ObjectId, ref: 'account' },
   title: String,
   content: String,
   openRange: String,
   tags: [String],
-  files: [{
-    _id: { type: Schema.Types.ObjectId, ref: 'files' }
-  }],
+  files: [{ type: Schema.Types.ObjectId, ref: 'file' }],
   created: { type: Date, default: Date.now },
   modified: Date,
   deprecated: Date

@@ -227,12 +227,12 @@ class BucketListcontainer extends Component {
           const { info } = this.props.data;
           this.setState({
             mode: 'edit',
-            writer: info.writer,
-            id: info._id,
-            title: info.title,
-            items: info.items,
-            dueDate: info.dueDate,
-            openRange: info.openRange
+            writer: info[0].writer,
+            id: info[0]._id,
+            title: info[0].title,
+            items: info[0].items,
+            dueDate: info[0].dueDate,
+            openRange: info[0].openRange
           });
         }
       );

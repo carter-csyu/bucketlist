@@ -19,35 +19,15 @@ const upload = multer({
   storage: storage 
 });
 
-
-router.post('/imageUpload', (req, res) => {
-  console.log('>> /api/post/imageUpload');
-  console.log('first req.body: ', req.body);
-
-  return res.json({
-    success: true
-  });
-  
-
-  upload(req, res, (err) => {
-    if (err) throw err;
-
-    console.log('req.body : ', req.body);
-    console.log('req.files : ', req.files);
-  });
-});
-
 /*
-  CREATE POST: POST /post/new
+  CREATE POST: POST /api/posts/
   REQUEST BODY: { title, content, tags, files, openRange }
   ERROR CODES:
     1. 사용자 정보를 찾을 수 없습니다
     2. 로그인 후 다시 시도 바랍니다
 */
-router.post('/new', upload.any(), (req, res) => {
+router.post('/', upload.any(), (req, res) => {
   const { title, content, tags, openRange } = req.body;
-
-  console.log("req body", req.body);
 
   // session check
   if (typeof req.session.userInfo === "undefined") {
@@ -93,11 +73,13 @@ router.post('/new', upload.any(), (req, res) => {
     File.collection.insert(docFiles, (err, files) => {
       const postFiles = [];
       
-      files.ops.forEach( file => {
-        postFiles.push({
-          _id: file._id
+      if (files) {
+        files.ops.forEach( file => {
+          postFiles.push({
+            _id: file._id
+          });
         });
-      });
+      }
 
       const post = new Post({
         writer: {
@@ -105,7 +87,7 @@ router.post('/new', upload.any(), (req, res) => {
         },
         title,
         content,
-        tags,
+        tags: tags.split(","),
         files: postFiles,
         openRange
       });
@@ -122,14 +104,16 @@ router.post('/new', upload.any(), (req, res) => {
  });
 
  /*
-  EDIT POST: POST /post/edit/:id
+  EDIT POST: PUT /api/posts/:id
   REQUEST BODY: { id, title, content, tags, files, openRange }
   ERROR CODES:
     1. 유효하지 않은 접근입니다
-    2. 존재하지 않는 글 입니다
+    2. 사용자 정보를 찾을 수 없습니다
+    3. 존재하지 않는 글 입니다
  */
-router.post('/edit', (req, res) => {
-  const { id, title, content, tags, files, openRange } = req.body;
+router.put('/:id', (req, res) => {
+  const { title, content, tags, files, openRange } = req.body;
+  const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(416).json({
@@ -138,12 +122,20 @@ router.post('/edit', (req, res) => {
     });
   }
 
+  // session check
+  if (typeof req.session.userInfo === "undefined") {
+    return res.status(401).json({
+      error: 2,
+      message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+
   Post.findOne( { _id: mongoose.Types.ObjectId(id) }, (err, post) => {
     if (err) throw err;
 
     if (!post) {
       return res.status(416).json({
-        code: 2,
+        code: 3,
         message: '존재하지 않는 글 입니다'
       });
     }
@@ -165,14 +157,15 @@ router.post('/edit', (req, res) => {
 });
 
 /*
-  EDIT POST: GET /post/edit/:id
+  GET POST: GET /api/posts/:id
   REQUEST BODY: {}
   ERROR CODES:
     1. 유효하지 않은 접근입니다
+    2. 사용자 정보를 찾을 수 없습니다
     2. 존재하지 않는 버킷리스트 입니다
 */
-router.get('/edit/:id', (req, res) => {
-  const { id } = this.params;
+router.get('/:id', (req, res) => {
+  const { id } = req.params; 
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(416).json({
@@ -181,12 +174,23 @@ router.get('/edit/:id', (req, res) => {
     });
   }
 
-  Post.findOne( { _id: mongoose.Types.ObjectId(id) }, (err, post) => {
+  /*
+  // session check
+  if (typeof req.session.userInfo === "undefined") {
+    return res.status(401).json({
+      error: 2,
+      message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+  */
+
+
+  Post.findOne({_id: mongoose.Types.ObjectId(id)}).populate('files').exec((err, post) => {
     if (err) throw err;
 
     if (!post) {
       return res.status(416).json({
-        code: 2,
+        code: 3,
         message: '존재하지 않는 버킷리스트 입니다'
       });
     }
@@ -196,14 +200,14 @@ router.get('/edit/:id', (req, res) => {
 });
 
 /*
-  GET POSTS: GET /post/list
+  GET POSTS: GET /api/posts
   REQUEST BODY: {}
   ERROR CODES:
     1. 사용자 정보를 찾을 수 없습니다
     2. 로그인 후 다시 시도 바랍니다
     3. 등록된 게시글이 없습니다
 */
-router.get('/list', (req, res) => {
+router.get('/', (req, res) => {
   // session check
   if (typeof req.session.userInfo === "undefined") {
     return res.status(401).json({
@@ -248,5 +252,30 @@ router.get('/list', (req, res) => {
     });
   });
 })
+
+/*
+  DELETE POST: DELETE /api/posts/:id
+  REQUEST BODY: {}
+  ERROR CODES: 
+    1. 유효하지 않는 접근입니다
+*/
+router.delete('/:id', (req, res) => {
+  const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(404).json({
+      code: 1,
+      message: '유효하지 않은 접근입니다'
+    });
+  }
+
+  Post.deleteOne( { _id: mongoose.Types.ObjectId(id) }, (err, post) => {
+    if (err) throw err;
+
+    return res.json({
+      success: true
+    });
+  });
+});
 
 export default router;

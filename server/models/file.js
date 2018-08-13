@@ -3,9 +3,7 @@ import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const File = new Schema({
-  writer: {
-    _id: { type: Schema.Types.ObjectId, ref: 'account' }
-  },
+  writer: { type: Schema.Types.ObjectId, ref: 'account' },
   fileName: String,
   fileSize: String,
   fileType: String,

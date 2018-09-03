@@ -1,11 +1,14 @@
 import React, { Component } from 'react';
 import Main from 'components/Main';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as ArticleActions from 'store/modules/article';
 
 import HomeContainer from 'containers/Home/HomeContainer';
 import SearchContainer from 'containers/Search/SearchContainer';
 import StatusContainer from 'containers/Status/StatusContainer';
 import Mentoring from 'components/Mentoring';
-import MyMenu from 'components/MyMenu';
+import MyMenuContainer from 'containers/MyMenu/MyMenuContainer';
 
 class MainContainer extends Component {
   state = {
@@ -26,6 +29,9 @@ class MainContainer extends Component {
   
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.match.url !== prevState.active) {
+      const { articleActions } = nextProps;
+      articleActions.clearArticle();
+      
       return {
         active: nextProps.match.url
       }
@@ -40,6 +46,8 @@ class MainContainer extends Component {
 
   render() {
     const { active } = this.state;
+    const { match, session } = this.props;
+
     const {
       handleClickMenu
     } = this;
@@ -51,20 +59,26 @@ class MainContainer extends Component {
       : active === '/search'
       ? (<SearchContainer />)
       : active === '/status'
-      ? (<StatusContainer />)
+      ? (<StatusContainer history={this.props.history} />)
       : active === '/mentoring'
       ? (<Mentoring />)
-      : active === '/mypage'
-      ? (<MyMenu />)
-      : (<div>Noting in here</div>);
+      : (<MyMenuContainer type={match.params.type} nickname={match.params.nickname} />)
 
     return (
       <Main
         active={active}
+        session={session}
         content={content}
       />
     );
   }
 }
 
-export default MainContainer;
+export default connect(
+  ({auth}) => ({
+    session: auth.user.info
+  }),
+  (dispatch) => ({
+    articleActions: bindActionCreators(ArticleActions, dispatch)
+  })
+)(MainContainer);

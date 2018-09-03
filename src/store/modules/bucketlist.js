@@ -23,9 +23,17 @@ export const createBucketlistRequest = (title, items, dueDate, openRange) => {
   return (dispatch) => {
     dispatch(createBucketlist());
 
-    return axios.post('/api/bucketlists', {
-      title, items, dueDate, openRange
-    }).then( response => {
+    let formData = new FormData();
+
+    formData.append('files', null, null);
+    formData.append('type', 'bucketlist');
+    formData.append('title', title);
+    formData.append('items', JSON.stringify(items));
+    formData.append('dueDate', dueDate);
+    formData.append('openRange', openRange);
+
+    return axios.post('/api/articles', formData)
+    .then( response => {
       // successed
       console.log(response);
       dispatch(createBucketlistSuccess());
@@ -44,9 +52,17 @@ export const editBucketlistRequest = (id, title, items, dueDate, openRange) => {
   return (dispatch) => {
     dispatch(createBucketlist());
 
-    return axios.put(`/api/bucketlists/${id}`, {
-      title, items, dueDate, openRange
-    }).then( response => {
+    let formData = new FormData();
+
+    formData.append('files', null, null);
+    formData.append('type', 'bucketlist');
+    formData.append('title', title);
+    formData.append('items', JSON.stringify(items));
+    formData.append('dueDate', dueDate);
+    formData.append('openRange', openRange);
+
+    return axios.put(`/api/articles/${id}`, formData)
+    .then( response => {
       // successed
       console.log(response);
       dispatch(editBucketlistSuccess());
@@ -65,7 +81,7 @@ export const getBucketlistRequest = (id) => {
   return (dispatch) => {
     dispatch(getBucketlist());
 
-    return axios.get(`/api/bucketlists/${id}`)
+    return axios.get(`/api/articles/${id}`)
       .then( response => {
         // successed
         console.log(response);

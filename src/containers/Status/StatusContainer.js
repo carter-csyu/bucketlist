@@ -1,85 +1,38 @@
 import React, { Component } from 'react';
 import Status from 'components/Status';
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+import * as notificationActions from 'store/modules/notification';
 
 class StatusContainer extends Component {
   state = {
-    activeId: -1,
-    folding: true,
-    items: [{
-      id: 1,
-      provider: {
-        email: 'chunsang.yu@gmail.com',
-        name: 'chunsang.yu',
-        nickname: 'chunsang.yu',
-        profileImage: 'https://materializecss.com/images/yuna.jpg'
-      },
-      content: 'chunsang.yu님이 게시글에 댓글을 남겼습니다.',
-      alertDate: '2018-07-28 12:15:00'
-    }, {
-      id: 2,
-      provider: {
-        email: 'chunsang.yu@gmail.com',
-        name: 'chunsang.yu',
-        nickname: 'chunsang.yu',
-        profileImage: 'https://materializecss.com/images/yuna.jpg'
-      },
-      content: 'chunsang.yu님이 게시글에 댓글을 남겼습니다.',
-      alertDate: '2018-07-28 12:15:00'
-    }, {
-      id: 3,
-      provider: {
-        email: 'chunsang.yu@gmail.com',
-        name: 'chunsang.yu',
-        nickname: 'chunsang.yu',
-        profileImage: 'https://materializecss.com/images/yuna.jpg'
-      },
-      content: 'chunsang.yu님이 게시글에 댓글을 남겼습니다.',
-      alertDate: '2018-07-28 12:15:00'
-    }, {
-      id: 4,
-      provider: {
-        email: 'chunsang.yu@gmail.com',
-        name: 'chunsang.yu',
-        nickname: 'chunsang.yu',
-        profileImage: 'https://materializecss.com/images/yuna.jpg'
-      },
-      content: 'chunsang.yu님이 게시글에 댓글을 남겼습니다.',
-      alertDate: '2018-07-28 12:15:00'
-    },{
-      id: 5,
-      provider: {
-        email: 'chunsang.yu@gmail.com',
-        name: 'chunsang.yu',
-        nickname: 'chunsang.yu',
-        profileImage: 'https://materializecss.com/images/yuna.jpg'
-      },
-      content: 'chunsang.yu님이 게시글에 댓글을 남겼습니다.',
-      alertDate: '2018-07-28 12:15:00'
-    },{
-      id: 6,
-      provider: {
-        email: 'chunsang.yu@gmail.com',
-        name: 'chunsang.yu',
-        nickname: 'chunsang.yu',
-        profileImage: 'https://materializecss.com/images/yuna.jpg'
-      },
-      content: 'chunsang.yu님이 게시글에 댓글을 남겼습니다.',
-      alertDate: '2018-07-28 12:15:00'
-    }]
+    activeId: '',
+    folding: true
   }
 
   handleClickItem = (id) => {
-    const { items } = this.state;
-    const index = items.findIndex( item => item.id === id);
-    
+    const { notifications, history, NotificationActions } = this.props;
+    const index = notifications.findIndex(notification => notification._id === id);
+
     this.setState({
       activeId: id
     });
 
-    window.M.Toast.dismissAll();
-    window.M.toast({
-      html: `${index + 1} 번째 항목이 선택되었습니다.`
-    });
+    NotificationActions.readRequest(notifications[index]._id).then(
+      () => {
+        const { status, error } = this.props;
+
+        if (status === "FAILURE") {
+          window.M.toast({
+            html: error.message
+          });
+        } else if (status === "SUCCESS") {
+          history.push({
+            pathname: `article/${notifications[index].article}`
+          });
+        }
+      }
+    )
   }
 
   handleClickViewMore = () => {
@@ -89,16 +42,35 @@ class StatusContainer extends Component {
     });
   }
 
+  componentDidMount() {
+    const { NotificationActions } = this.props;
+
+    console.log(NotificationActions);
+
+    NotificationActions.getNotificationsRequest()
+    .then( () => {
+      const { status, error } = this.props;
+
+      if (status === "SUCCESS") {
+      } else if (status === "FAILURE") {
+        window.M.toast({
+          html: error.message
+        });
+      }
+    })
+  }
+
   render() {
-    const { activeId, items, folding } = this.state;
+    const { activeId, folding } = this.state;
     const {
       handleClickItem,
       handleClickViewMore
     } = this;
+    const { notifications } = this.props;
 
     return (
       <Status 
-        items={items}
+        notifications={notifications}
         activeId={activeId}
         folding={folding}
         onClickItem={handleClickItem}
@@ -108,4 +80,13 @@ class StatusContainer extends Component {
   }
 }
 
-export default StatusContainer;
+export default connect(
+  ({notification}) => ({
+    status: notification.status,
+    error: notification.error,
+    notifications: notification.notifications
+  }),
+  (dispatch) => ({
+    NotificationActions: bindActionCreators(notificationActions, dispatch)
+  })
+)(StatusContainer);

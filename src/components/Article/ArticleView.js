@@ -6,6 +6,7 @@ const ArticleView = ({
   history,
   session,
   article,
+  onRemoveArticle,
   onChange,
   onKeyDown,
   onAddComment,
@@ -32,6 +33,7 @@ const ArticleView = ({
       <Article
         session={session}
         article={article}
+        onRemoveArticle={onRemoveArticle}
         onClickLike={onClickLike}
         onClickComment={onClickComment}
         onClickShare={onClickShare}

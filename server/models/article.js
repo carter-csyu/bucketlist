@@ -17,7 +17,9 @@ const Article = new Schema({
   openRange: String,
   created: { type: Date, default: Date.now },
   modifed: { type: Date, default: Date.now },
-  deprecated: Date
+  deprecated: Date, 
+  comments: [{ type: Schema.Types.ObjectId, ref: 'comment'}],
+  likes: [{ type: Schema.Types.ObjectId, ref: 'account'}]
 });
 
 export default mongoose.model('article', Article);

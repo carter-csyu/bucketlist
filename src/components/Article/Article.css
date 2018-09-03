@@ -3,7 +3,7 @@
   margin-bottom: 20px;
 }
 
-.article-wrapper header.writer {
+.article-wrapper a.writer {
   padding: 16px;
   height: 60px;
   display: flex;
@@ -11,22 +11,22 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
-.article-wrapper header.writer img {
+.article-wrapper a.writer img {
   height: 30px;
   width: 30px;
 }
 
-.article-wrapper header.writer .username {
+.article-wrapper a.writer .username {
   margin-left: 5px;
   flex: 1;
 }
 
-.article-wrapper header.writer .btn-more {
+.article-wrapper a.writer .btn-more {
   display: flex;
   align-items: center;
 }
 
-.article-wrapper header.writer .dropdown-content {
+.article-wrapper a.writer .dropdown-content {
   width: 200px !important;
 }
 
@@ -39,6 +39,15 @@
   margin-top: 6px;
   font-weight: 600;
   font-size: 1.2rem;
+}
+
+.info-content .collection .bucketlist-item {
+  height: 40px;
+  position: relative;
+}
+
+.info-content .collection .bucketlist-item i {
+  float: right;
 }
 
 .info-content .collection .bucketlist-item span {
@@ -156,3 +165,17 @@
   height: inherit;
   min-height: inherit;
 }
+
+.more-articles {
+  width: 100%;
+}
+
+.more-articles:hover {
+  background-color: #ffffff !important;
+}
+
+.waves-effect.waves-indigo .waves-ripple {
+  /* The alpha value allows the text and background color
+  of the button to still show through. */
+   background-color: #1a237e;
+ }

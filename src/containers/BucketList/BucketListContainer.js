@@ -7,10 +7,7 @@ import * as bucketlistActions from 'store/modules/bucketlist';
 class BucketListcontainer extends Component {
   state = {
     mode: 'new',
-    id: -1,
-    writer: {
-
-    },
+    writer: {},  
     title: '',
     value: '',
     id: 1,
@@ -39,7 +36,7 @@ class BucketListcontainer extends Component {
     this.setState({
       value: '',
       items: items.concat({
-        id: id,
+        _id: id,
         name: value,
         done: false
       }),
@@ -52,14 +49,14 @@ class BucketListcontainer extends Component {
 
     this.setState({
       items: items.filter(
-        (item) => item.id !== id
+        (item) => item._id !== id
       )
     });
   }
 
   handleToggle = (id) => {
     const { items } = this.state;
-    const index = items.findIndex( item => item.id === id);
+    const index = items.findIndex( item => item._id === id);
 
     this.setState({
       items: [
@@ -118,13 +115,12 @@ class BucketListcontainer extends Component {
 
     const dueDateArr = dueDate.split("-");
     const dueDateObj = new Date(dueDateArr[0], Number(dueDateArr[1]) + 1, dueDateArr[2]);
-
     
     if ( mode === "new") {
       BucketlistActions.createBucketlistRequest(
         title, 
         items, 
-        dueDate: dueDateObj,
+        dueDateObj,
         openRange
       ).then(
         () => {
@@ -153,7 +149,7 @@ class BucketListcontainer extends Component {
         id,
         title,
         items,
-        dueDate: dueDateObj,
+        dueDateObj,
         openRange
       ).then(
         () => {
@@ -222,9 +218,20 @@ class BucketListcontainer extends Component {
     if (match.path === "/bucketlist/edit/:id") {
       const { id } = match.params;
       
-      BucketlistActions.getBucketlistRequest(id).then(
-        () => {
-          const { info } = this.props.data;
+      this.retrieveBucketlist(id);
+    }
+  }
+
+  retrieveBucketlist = (id) => {
+    const { BucketlistActions } = this.props; 
+
+    BucketlistActions.getBucketlistRequest(id).then(
+      () => {
+        const { data } = this.props;
+
+        if (data.status === "SUCCESS") {
+          const { info } = data;
+
           this.setState({
             mode: 'edit',
             writer: info[0].writer,
@@ -234,9 +241,13 @@ class BucketListcontainer extends Component {
             dueDate: info[0].dueDate,
             openRange: info[0].openRange
           });
+        } else {
+          window.M.toast({
+            html: data.error.message
+          });
         }
-      );
-    }
+      }
+    );
   }
 
   render() {
@@ -254,25 +265,23 @@ class BucketListcontainer extends Component {
     } = this;
 
     return (
-      <div>
-        <BucketList
-          history={history}
-          mode={mode}
-          title={title}
-          value={value}
-          items={items}
-          dueDate={dueDate}
-          openRange={openRange}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-          onClickAdd={handleClickAdd}
-          onRemove={handleRemove}
-          onToggle={handleToggle}
-          onCreate={handleCreate}
-          onChangeOpenRange={handleChangeOpenRange}
-          onSetDatepicker={handleSetDatepicker}
-        /> 
-      </div>
+      <BucketList
+        history={history}
+        mode={mode}
+        title={title}
+        value={value}
+        items={items}
+        dueDate={dueDate}
+        openRange={openRange}
+        onChange={handleChange}
+        onKeyDown={handleKeyDown}
+        onClickAdd={handleClickAdd}
+        onRemove={handleRemove}
+        onToggle={handleToggle}
+        onCreate={handleCreate}
+        onChangeOpenRange={handleChangeOpenRange}
+        onSetDatepicker={handleSetDatepicker}
+      /> 
     );
   }
 }

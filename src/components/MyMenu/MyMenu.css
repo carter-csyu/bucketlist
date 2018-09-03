@@ -1,0 +1,66 @@
+
+.user-profile {
+  min-height: 100px;
+  display: flex;
+}
+
+.user-profile > div:first-child {
+  padding: 10px 15px;
+}
+
+.user-profile > div:nth-child(2) {
+  padding: 10px 15px;
+  flex: 1;
+}
+
+.user-profile > div:nth-child(2) h6 {
+  font-size: 22px;
+}
+
+.user-profile > div:nth-child(2) .action-btn {
+  width: 100%;
+  text-align: center;
+  border: 1px solid #dbdbdb;
+}
+
+.user-profile .profile-image {
+  height: 75px;
+  width: 75px;
+}
+
+.bio {
+  padding: 10px 15px;
+}
+
+.bio > header {
+  font-weight: 600;
+}
+
+.menu-items {
+  display: flex;
+  border-top: 1px solid #dbdbdb;
+  border-bottom: 1px solid #dbdbdb;
+  padding: 15px 0;
+}
+
+.menu-items > a {
+  flex: 1;
+  text-align: center;
+}
+
+.menu-items > div > div:hover {
+  cursor: pointer;
+}
+
+.menu-items .item-name {
+  color: #999;
+}
+
+.menu-items .item-name.active {
+  color: #1a237e;
+  font-weight: 600
+}
+
+.menu-items .item-count {
+  font-size: 0.9em;
+}

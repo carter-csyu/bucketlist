@@ -6,7 +6,7 @@ import * as postActions from 'store/modules/post';
 
 class PostContainer extends Component {
   state = {
-    mode: '',
+    mode: 'new',
     id: -1,
     writer: {},
     title: '',
@@ -24,7 +24,7 @@ class PostContainer extends Component {
   }
 
   handleCreate = () => {
-    const { id, title, content, tags, files, openRange  } = this.state;
+    const { mode, id, title, content, tags, files, openRange  } = this.state;
     const { PostActions } = this.props;
 
     if (title === null || title === "") {
@@ -48,44 +48,71 @@ class PostContainer extends Component {
       return;
     }
 
-    PostActions.createPostRequest(
-      title,
-      content,
-      tags,
-      files,
-      openRange
-    ).then(
-      () => {
-        const { create } = this.props;
-        
-        if (create.status === "SUCCESS") {
-          window.M.toast({
-            html: '성공적으로 등록되었습니다'
-          });
-
-          this.setState({
-            title: '',
-            content: '',
-            tags: [],
-            files: [],
-            openRange: '1'
-          }, () => {
-            this.chipInstance.chipsData.forEach(() => {
-              this.chipInstance.deleteChip();
+    if (mode === 'new') {
+      PostActions.createPostRequest(
+        title,
+        content,
+        tags,
+        files,
+        openRange
+      ).then(
+        () => {
+          const { create } = this.props;
+          
+          if (create.status === "SUCCESS") {
+            window.M.toast({
+              html: '성공적으로 등록되었습니다'
             });
-          })
-        } else {
-          window.M.toast({
-            html: create.error.message
-          });
+  
+            this.setState({
+              title: '',
+              content: '',
+              tags: [],
+              files: [],
+              openRange: '1'
+            }, () => {
+              this.chipInstance.chipsData.forEach(() => {
+                this.chipInstance.deleteChip();
+              });
+            })
+          } else {
+            window.M.toast({
+              html: create.error.message
+            });
+          }
         }
-      }
-    )
+      );
+    } else if (mode === 'edit') {
+      PostActions.editPostRequest(
+        id,
+        title,
+        content,
+        tags,
+        files,
+        openRange
+      ).then(
+        () => {
+          const { edit } = this.props;
 
+          if (edit.status === 'SUCCESS') {
+            window.M.toast({
+              html: '성공적으로 수정되었습니다'
+            });
 
-    window.M.toast({
-      html: '등록버튼 클릭'
-    });
+            this.retrievePost(id);
+
+          } else {
+            window.M.toast({
+              html: edit.error.message
+            });
+          }
+        }
+      );
+    } else {
+      window.M.toast({
+        html: '잘못된 접근 입니다'
+      });
+    }
   }
 
   handleSetChips = (ref) => {
@@ -138,6 +165,7 @@ class PostContainer extends Component {
   }
 
   handleChangeFile = (e) => {
+    console.log(e.target.files);
     this.setState({
       files: Array.from(e.target.files)
     }, (e) => {
@@ -154,6 +182,8 @@ class PostContainer extends Component {
   createCarouselInstance = () => {
     this.carouselInstance = window.M.Carousel.init(this.state.carousel, {
       fullWidth: true,
+      noWrap: true,
+      indicators: true
     });
   }
 
@@ -177,7 +207,7 @@ class PostContainer extends Component {
       handleChipAdd,
       handleChipDelete
     } = this;
-    const { match, PostActions } = this.props;
+    const { match } = this.props;
 
     this.setModeType();
 
@@ -193,9 +223,19 @@ class PostContainer extends Component {
     if (match.path === "/post/edit/:id") {
       const { id } = match.params;
       
-      PostActions.getPostRequest(id).then(
-        () => {
-          const { info } = this.props.data;
+      this.retrievePost(id);
+    }
+  }
+
+  retrievePost = (id) => {
+    const { PostActions } = this.props;
+
+    PostActions.getPostRequest(id).then(
+      () => {
+        const { data } = this.props;
+
+        if (data.status === "SUCCESS") {
+          const { info } = data;
 
           if (info[0].tags.length > 0) {
             info[0].tags.forEach(tag => {
@@ -204,7 +244,7 @@ class PostContainer extends Component {
               });
             })
           }
-
+          
           this.setState({
             mode: 'edit',
             writer: info[0].writer,
@@ -212,11 +252,16 @@ class PostContainer extends Component {
             title: info[0].title,
             content: info[0].content,
             tags: info[0].tags,
+            files: info[0].files,
             openRange: info[0].openRange
           });
+        } else {
+          window.M.toast({
+            html: data.error.message
+          });
         }
-      );
-    }
+      }
+    );
   }
 
   render() {

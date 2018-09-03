@@ -32,151 +32,54 @@ class SearchContainer extends Component {
 
   handleSearchArticles = () => {
     const { search } = this.state;
+    const { ArticleActions } = this.props;
     
     this.setState({
       keyword: search
-    });
-  }
+    }, () => {
+      ArticleActions.getArticlesRequest({keyword: search}).then(
+        () => {
+          const { status } = this.props;
   
-  handleClickLike = (id) => {
-    const { session } = this.state;
-    const { ArticleActions } = this.props;
-    
-    ArticleActions.handleLike(id, session);
-  }
-  
-  handleClickComment = (id) => {
-    const { ArticleActions } = this.props;
-    
-    ArticleActions.handleComment(id);
-  }
-  
-  handleFollowStatus = (id) => {
-    const { ArticleActions } = this.props;
-
-    ArticleActions.handleFollow(id);
-
-    window.M.toast({
-      html: '팔로우 상태 변경'
+          if (status !== "SUCCESS") {
+            window.M.toast({
+              html: '등록된 게시글이 없습니다'
+            });
+          }
+        }
+      );
     });
   }
 
-  handleClickShare = (id) => {
+  componentDidMount() {
     const { ArticleActions } = this.props;
 
-    ArticleActions.share(id);
-    
-    window.M.toast({
-      html: '공유 버튼 클릭'
-    });
-  }
-
-  handleRouteToArticle = (id) => {
-    const { ArticleActions } = this.props;
-
-    ArticleActions.route(id);
-
-    window.M.toast({
-      html: '게시물로 이동되었습니다.'
-    });
-  }
-
-  handleCopyLink = (id) => {
-    const { ArticleActions } = this.props;
-
-    ArticleActions.copyLink(id);
-
-    window.M.toast({
-      html: '링크 복사하기'
-    });
-  }
-
-  
-  handleChange = (e, id) => {
-    const { ArticleActions } = this.props;
-
-    ArticleActions.handleChange(id, e.target.value);
-  }
-
-  handleKeyDown = (e, id) => {
-    if (e.key === "Enter") {
-      this.handleAddComment(id);
-    }
-  }
-
-  handleAddComment = (id) => {
-    const { session } = this.state;
-    const { ArticleActions } = this.props;
-
-    ArticleActions.addComment(id, session);
-  }
-
-  handleRemoveComment = (id, commentId) => {
-    const { ArticleActions } = this.props;
-
-    ArticleActions.removeComment(id, commentId);
-  }
-
-  handleClickViewMore = (id) => {
-    const { ArticleActions } = this.props;
-
-    ArticleActions.viewMore(id);
+    ArticleActions.clearArticle();
   }
 
   render() {
-    const { search, keyword, session } = this.state;
-    const { articles } = this.props;
+    const { search } = this.state;
     const {
       handleSearchChange,
-      handleSearchKeyDown,
-      handleClickLike,
-      handleClickComment,
-      handleClickShare,
-      handleRouteToArticle,
-      handleCopyLink,
-      handleFollowStatus,
-      handleChange,
-      handleKeyDown,
-      handleAddComment,
-      handleRemoveComment,
-      handleClickViewMore
+      handleSearchKeyDown 
     } = this;
-
-    const filteredArticles = articles.filter(
-      article => article.chips.findIndex((chip) => {
-        if (keyword === "") return -1;
-        
-        return chip.indexOf(keyword);
-      })
-    )
 
     return (
       <Search
         search={search}
         onSearchChange={handleSearchChange}
         onSearchKeyDown={handleSearchKeyDown}
-
-        session={session}
-        articles={filteredArticles}
-        onClickLike={handleClickLike}
-        onClickComment={handleClickComment}
-        onClickShare={handleClickShare}
-        onRouteToArticle={handleRouteToArticle}
-        onCopyLink={handleCopyLink}
-        onFollowStatus={handleFollowStatus}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-        onAddComment={handleAddComment}
-        onRemoveComment={handleRemoveComment}
-        onClickViewMore={handleClickViewMore}
       />
     )
   }
 }
 
 export default connect(
-  ({article}) => ({
-    articles: article.articles
+  ({article, auth}) => ({
+    articles: article.articles,
+    status: article.status,
+    error: article.error,
+    session: auth.user.info
   }),
   (dispatch) => ({
     ArticleActions: bindActionCreators(articleActions, dispatch)

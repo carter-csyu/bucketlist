@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Bottom = ({
   active,
+  session
 }) => {
   return (
     <footer className="page-footer footer white">
@@ -35,8 +36,11 @@ const Bottom = ({
           </Link>
         </div>
         <div className="footer-items">
-          <Link to="/mypage" className="grey-text text-lighten-2">
-            <i className={`material-icons ${active === '/mypage' && "active"}`}>
+          <Link to={`/${session.nickname}`} className="grey-text text-lighten-2">
+            <i className={`material-icons 
+              ${active !== "/" && active !== "/home" && 
+                active !== "/search" && active !== "/status" && 
+                active !== "/mentoring" && "active"}`}>
               person
             </i>
           </Link>

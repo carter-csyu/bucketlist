@@ -1,11 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Link } from 'react-router-dom';
 import './Article.css';
 
 const Article = ({
   session,
   article,
+  onRemoveArticle,
   onChange,
   onKeyDown,
   onAddComment,
@@ -14,19 +16,21 @@ const Article = ({
   onRemoveComment,
   onClickShare,
   onRouteToArticle,
-  onCopyLink,
   onFollowStatus,
   onClickViewMore
 }) => {
   const { 
-    id, type, writer, title, content, items, folding, openRange, 
+    _id: id, type, writer, title, content, items, folding, openRange, 
     chips, files, likes, comments, comment, commentActive } = article;
+  
+  const { protocol, host, pathname } = window.location;
+  const url = `${protocol}//${host}`;
 
   const imageFiles = files.map(
     (file, idx) => {
       return (
         <a className="carousel-item" key={idx}>
-          <img alt={idx} src={file.src} />
+          <img alt={idx} src={`/images/${file.fileName}`} />
         </a>
       )
     }
@@ -51,7 +55,7 @@ const Article = ({
     imageItems = (<div></div>);
   }
 
-  const index = likes.findIndex( like => like.email === session.email);
+  const index = likes.findIndex( like => like === session._id);
   let favorite;
   if (index > -1) {
     favorite = "favorite";
@@ -62,8 +66,8 @@ const Article = ({
   const chatBubble = commentActive ? 'chat_bubble' : 'chat_bubble_outline';
   
   const commentItems = comments.map(
-    ({id: commentId, email, nickname, content}, idx) => {
-      
+    ({_id: commentId, writer, content}, idx) => {
+      const { nickname, email } = writer;
       const removeItem = email === session.email
         ? (
           <a className="comment-remove-icon" 
@@ -72,7 +76,7 @@ const Article = ({
           </a>
           )
         : (<div></div>);
-
+      
       return (
         <div key={idx} className="comment">
           <div className="comment-nickname">
@@ -88,11 +92,15 @@ const Article = ({
     }
   );
 
+  if (typeof writer.profileImage === 'undefined') {
+    writer.profileImage = `default-profile.png`;
+  }
+
   const bucketItems = items.map(
-    ({id, name, done}, idx) => {
+    ({_id: id, name, done}, idx) => {
       return (
         <li key={id} className="collection-item bucketlist-item">
-          <span className="indigo-text text-darken-4">{idx + 1}.</span> {name}
+          <span className="indigo-text text-darken-4">{idx + 1}.</span> {name} {done ? <i className="material-icons indigo-text">done</i> : null}
         </li>
       )
     }
@@ -116,16 +124,43 @@ const Article = ({
       </div>
     )
   : ( <div></div> );
+
+  /* 드롭다운리스트 설정 */
+  const routeToArticle = pathname.indexOf('/article/') < 0
+  ? (<li><Link to={`/article/${id}`} onClick={() => onRouteToArticle(id)}>게시물로 이동</Link></li>) : null; 
+  
+  const editArticle = session._id === writer._id
+  ? (<li><Link to={`/${type}/edit/${id}`}>수정</Link></li>) : null;
+
+  const deleteArticle = session._id === writer._id
+  ? (<li><a onClick={() => onRemoveArticle(id)}>삭제</a></li>) : null;
+
+  const cancleFollow = session._id !== writer._id
+  ? (<li><a onClick={() => onFollowStatus(id)}>팔로우 취소</a></li>) : null;
+
+  const dropdownList = (
+    <ul id={`dropdown-more-${id}`} className='dropdown-content'>
+      {routeToArticle}
+      {editArticle}
+      {deleteArticle}
+      <li>
+        <CopyToClipboard text={`${url}/article/${id}`}>
+          <a onClick={() => window.M.toast({ html: '복사되었습니다'})}>링크 복사하기</a>
+        </CopyToClipboard>
+      </li>
+      <li><a>취소</a></li>
+    </ul>
+  );
   
   return (
     <article key={id} className="article-wrapper">
-      <header className="writer">
+      <Link className="writer" to={`${writer.nickname}/bucketlist`}>
         <img 
           className="circle responsive-img"
-          src={writer.profileImage} 
-          alt={writer.name} />
+          src={`/images/profiles/${writer.profileImage}`} 
+          alt={writer.nickname} />
         <div className="username">
-          <a className="grey-text text-darken-4">{writer.name}</a>
+          <a className="grey-text text-darken-4">{writer.nickname}</a>
         </div> 
         <div 
           className="btn-more dropdown-trigger"
@@ -137,22 +172,17 @@ const Article = ({
               });
           }}
         >
-          <i className="material-icons">more_horiz</i>
+          <i className="material-icons indigo-text text-darken-4">more_horiz</i>
         </div>
-
-        <ul id={`dropdown-more-${id}`} className='dropdown-content'>
-          <li><Link to={`/post/${id}`} onClick={() => onRouteToArticle(id)}>게시물로 이동</Link></li>
-          <li><a onClick={() => onCopyLink(id)}>링크 복사하기</a></li>
-          <li><a onClick={() => onFollowStatus(id)}>팔로우 취소</a></li>
-          <li><a>취소</a></li>
-        </ul>
-      </header>
+        {/* 드롭다운 리스트 */}
+        {dropdownList}
+      </Link>
       <div className="info">
         <div className="info-title">
           {title}
         </div>
         <div className="info-content">
-          { type === 1 
+          { type === 'bucketlist'
             ? ( 
                 <div>
                   <ul className="collection">
@@ -204,14 +234,14 @@ const Article = ({
         <input 
           type="text" 
           name="comment"
-          className="validate" 
+          className='validate'
           placeholder="댓글 달기..."
           value={comment}
           disabled={!commentActive}
           onChange={(e) => onChange(e, id)}
           onKeyDown={(e) => onKeyDown(e, id)}
         />
-        <div className="btn-flat" onClick={() => onAddComment(id)}>
+        <div className={`btn-flat ${comment === '' ? 'disabled': ''}`}  onClick={() => onAddComment(id)}>
           게시
         </div>
       </div>
@@ -228,7 +258,7 @@ Article.propTypes = {
     id: PropTypes.string, 
     type: PropTypes.string, 
     writer: PropTypes.shape({
-      name: PropTypes.string,
+      nickname: PropTypes.string,
       profileImage: PropTypes.string
     }),
     title: PropTypes.string, 
@@ -243,6 +273,7 @@ Article.propTypes = {
     comment: PropTypes.string, 
     commentActive: PropTypes.boolean
   }),  
+  onRemoveArticle: PropTypes.func,
   onChange: PropTypes.func,
   onKeyDown: PropTypes.func,
   onAddComment: PropTypes.func,
@@ -250,7 +281,6 @@ Article.propTypes = {
   onClickComment: PropTypes.func,
   onClickShare: PropTypes.func,
   onRouteToArticle: PropTypes.func,
-  onCopyLink: PropTypes.func,
   onFollowStatus: PropTypes.func,
   onClickViewMore: PropTypes.func,
 };
@@ -258,44 +288,25 @@ Article.propTypes = {
 Article.defaultProps = {
   session: {},
   article: {
-    id: 1,
-    type: 2,
+    id: -1,
+    type: 1,
     writer: {
-      name: 'chunsang.yu',
-      profileImage: 'https://materializecss.com/images/yuna.jpg'
+      nickname: '',
+      profileImage: 'default-profile.png'
     },
-    title: '어딘가의 호수',
-    content: '어딘가의 호수',
+    title: '',
+    content: '',
     items: [],
     folding: false,
     openRange: '1',
-    chips: ['태그1-1', '태그2-2'],
-    files: [{
-      src: 'https://materializecss.com/images/sample-1.jpg'
-    },{
-      src: 'https://materializecss.com/images/yuna.jpg'
-    }],
-    likes: [{
-      email: "chunsang.yu@gmail.com",
-      nickname: "chunsang.yu"
-    }, {
-      email: "chundol42@github.com",
-      nickname: "chundol42"
-    }],
-    comments: [{
-      id: 0,
-      email: "chunsang.yu@gmail.com",
-      nickname: "chunsang.yu",
-      content: "어디에 위치한 호수인가요?"
-    }, {
-      id: 1,
-      email: "chundol42@github.com",
-      nickname: "chundol42",
-      content: "저도 궁금해요"
-    }],
+    chips: [],
+    files: [],
+    likes: [],
+    comments: [],
     comment: '',
     commentActive: false
   },
+  onRemoveArticle: () => console.warn('onRemoveArticle not defined'),
   onChange: () => console.warn('onChange not defined'),
   onKeyDown: () => console.warn('onKeyDown not defined'),
   onAddComment: () => console.warn('onAddComment not defined'),
@@ -303,7 +314,6 @@ Article.defaultProps = {
   onClickComment: () => console.warn('onclickComment not defined'),
   onClickShare: () => console.warn('onClickShare not defined'),
   onRouteToArticle: () => console.warn('onRouteToArticle not defined'),
-  onCopyLink: () => console.warn('onCopyLink not defined'),
   onFollowStatus: () => console.warn('onFollowStatus not defined'),
   onClickViewMore: () => console.warn('onClickViewMore not defined')
 };

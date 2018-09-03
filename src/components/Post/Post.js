@@ -18,10 +18,19 @@ const Post = ({
   let images, imageElements;
 
   if (files.length > 0) {
+    console.log(files);
     images = files.map((image, idx) => {
+      let src;
+
+      if (image._id) {
+        src = `http://localhost:3000/images/${image.fileName}`;
+      } else {
+        src = window.URL.createObjectURL(image);
+      }
+
       return (
         <a className="carousel-item" key={idx}>
-          <img alt={idx} src={window.URL.createObjectURL(image)} />
+          <img alt={idx} src={src} />
         </a>
       );
     });

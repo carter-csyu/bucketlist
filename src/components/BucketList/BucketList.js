@@ -21,12 +21,12 @@ const BucketList = ({
   onChangeOpenRange,
   onSetDatepicker
 }) => {
-  const itemList = items.map((item, idx) => {
-    const { id, name, done } = item;
+  const itemList = items.map((item) => {
+    const { _id, name, done } = item;
     return (
       <BucketItem
-        key={id}
-        id={id}
+        key={_id}
+        id={_id}
         name={name}
         done={done}
         onRemove={onRemove}

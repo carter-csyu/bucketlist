@@ -34,10 +34,10 @@ export const createPostRequest = (title, content, tags, files, openRange) => {
       formData.append('files', file, file.name);
     });
 
+    formData.append('type', 'post');
     formData.append('title', title);
     formData.append('content', content);
     formData.append('tags', tags);
-    formData.append('files', files);
     formData.append('openRange', openRange);
 
     return axios.post('/api/articles/', formData)
@@ -60,9 +60,21 @@ export const editPostRequest = (id, title, content, tags, files, openRange) => {
   return (dispatch) => {
     dispatch(editPost());
 
-    return axios.put(`/api/posts/${id}`, {
-      title, content, tags, files, openRange
-    }).then( response => {
+    let formData = new FormData();
+
+    files.forEach( (file, index) => {
+      console.log(file);
+      formData.append('files', file, file.name);
+    });
+
+    formData.append('type', 'post');
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('tags', tags);
+    formData.append('openRange', openRange);
+
+    return axios.put(`/api/articles/${id}`, formData)
+    .then( response => {
       // successed
       console.log(response);
       dispatch(editPostSuccess());
@@ -81,7 +93,7 @@ export const getPostRequest = (id) => {
   return (dispatch) => {
     dispatch(getPost());
 
-    return axios.get(`/api/posts/${id}`)
+    return axios.get(`/api/articles/${id}`)
       .then( response => {
         // successed
         console.log(response);
@@ -89,7 +101,7 @@ export const getPostRequest = (id) => {
       }).catch( error => {
         // failed
         console.log(error);
-        //dispatch(getPostFailure(error.response.data));
+        dispatch(getPostFailure(error.response.data));
       });
   }
 };

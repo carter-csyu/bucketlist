@@ -1,23 +1,32 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Status.css';
+import * as utils from 'utils';
+import TimeAgo from 'react-timeago';
 
 const Status = ({
   items,
+  notifications,
   activeId,
   folding,
   onClickItem,
   onClickViewMore
 }) => {
-  const itemList = items.map(
-    ({id, provider, content, alertDate}) => {
+  const itemList = notifications.map(
+    ({_id, from: provider, type, read, created}) => {
+      const content = type === 'comment'
+        ? `${provider.nickname}님이 게시글에 댓글을 남겼습니다`
+        : type === 'like'
+        ? `${provider.nickname}님이 회원님의 글을 좋아합니다`
+        : '';
+
       return (
-        <li key={id} className={`collection-item avatar ${activeId === id ? 'active' : ''}`} onClick={() => onClickItem(id)}>
-          <img src={provider.profileImage} alt="" className="circle" />
+        <li key={_id} 
+          className={`collection-item avatar ${activeId === _id ? 'active' : ''} ${!read ? 'read' : ''}`} 
+          onClick={() => onClickItem(_id)}>
+          <img src={`/images/profiles/${provider.profileImage}`} alt="" className="circle" />
           <p>{content}</p>
-          <p className="alert-date">
-            {alertDate}
-          </p>
+          <TimeAgo className="alert-date" date={new Date(created)} />
         </li>
       );
     }
@@ -49,7 +58,8 @@ const Status = ({
 
 Status.propTypes = {
   items: PropTypes.array,
-  activeId: PropTypes.number,
+  notifications: PropTypes.array,
+  activeId: PropTypes.string,
   folding: PropTypes.bool,
   onClickItem: PropTypes.func,
   onClickViewMore: PropTypes.func
@@ -57,7 +67,8 @@ Status.propTypes = {
 
 Status.defaultProps = {
   items: [],
-  activeId: -1,
+  notifications: [],
+  activeId: '',
   folding: true,
   onClickItem: () => console.warn('onClickItem not defined'),
   onClickViewMore: () => console.warn('onClickViewMore not defined')

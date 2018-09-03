@@ -1,8 +1,25 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import Account from '../models/account';
+import File from '../models/file';
+import multer from 'multer';
 
 const router = express.Router();
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'C:/dev/github/bucketlist/server/uploads/profiles');
+  },
+  filename: (req, file, cb) => {
+    const { _id: id } = req.session.userInfo;
+    const ext = file.originalname.slice(file.originalname.lastIndexOf('.'));
+    cb(null, id + Date.now() + ext);
+  }
+});
+
+const upload = multer({
+  storage: storage
+});
 
 /*
   ACCOUNT SIGNIN: POST /auth/signin
@@ -104,6 +121,16 @@ router.post('/signup', (req, res) => {
   });
 });
 
+router.get('/signout', (req, res) => {
+  req.session.destroy( err => {
+    if (err) throw err;
+  });
+
+  return res.json({
+    success: true
+  });
+});
+
 /*
   ACCOUNT CHECK_NICKNAME: POST /auth/checkNickname
   REQUEST BODY: { nickname }
@@ -114,7 +141,7 @@ router.post('/signup', (req, res) => {
 router.post('/checkNickname', (req, res) => {
   const { nickname } = req.body;
 
-  if (nickname.length < 4) {
+  if (nickname.length < 2) {
     return res.status(400).json({
       code: 1,
       message: "INVALID NICKNAME"
@@ -152,6 +179,153 @@ router.get('/getUserinfo', (req, res) => {
 
   return res.json({
     user: req.session.userInfo
+  });
+});
+
+router.get('/', (req, res) => {
+  if (typeof req.session.userInfo === "undefined") {
+    return res.status(401).json({
+      error: 1,
+      message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+
+  const { userInfo: user } = req.session;
+
+  Account.findById(mongoose.Types.ObjectId(user._id), (err, account) => {
+    if (err) throw err;
+
+    if (!account) {
+      return res.status(401).json({
+        error: 2,
+        message: '사용자 정보를 찾을 수 없습니다'
+      });
+    }
+
+    const session = req.session;
+    session.userInfo = {
+      _id: account._id,
+      email: account.email,
+      fullname: account.fullname,
+      nickname: account.nickname,
+      bio: account.bio,
+      profileImage: account.profileImage,
+      posts: account.posts,
+      bucketlists: account.bucketlists
+    };
+
+    return res.json({
+      user: session.userInfo
+    });
+  });
+});
+
+router.get('/:nickname', (req, res) => {
+  const { nickname } = req.params;
+
+  Account.findOne({nickname}) 
+  .select('_id email fullname nickname bio profileImage posts bucketlists')
+  .then(account => {
+    if (!account) {
+      return res.status(404).json({
+        code: 1,
+        message: '대상이 존재하지 않습니다'
+      });
+    }
+
+    return res.json(account);
+  })
+  .catch(err => {
+    if (err) throw err;
+  });
+});
+
+router.put('/:id', (req, res) => {
+  const { id } = req.params;
+  const { fullname, nickname, bio } = req.body;
+
+  if (typeof req.session.userInfo === 'undefined') {
+    return res.status(401).json({
+      error: 1,
+      message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+  const { userInfo } = req.session;
+
+  if (userInfo._id !== id) {
+    return res.status(400).json({
+      error: 2,
+      message: '잘못된 접근입니다'
+    });
+  }
+
+  Account.findById(mongoose.Types.ObjectId(id), (err, account) => {
+    if (err) throw err;
+    
+    if (!account) {
+      return res.status(401).json({
+        code: 3,
+        message: 'ACCOUNT NOT EXISTS'
+      });
+    }
+
+    account.fullname !== fullname ? account.fullname = fullname : null;
+    account.nickname !== nickname ? account.nickname = nickname : null;
+    account.bio !== bio ? account.bio = bio : null;
+
+    let session = req.session;
+    session.userInfo.fullname = account.fullname,
+    session.userInfo.nickname = account.nickname,
+    session.userInfo.bio = account.bio,
+
+    account.save( err => {
+      if (err) throw err;
+
+      return res.json(session.userInfo);
+    })
+  });
+});
+
+router.post('/profile', upload.any(), (req, res) => {
+  // session check
+  if (typeof req.session.userInfo === 'undefined') {
+    return res.status(401).json({
+      error: 1,
+      message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+
+  const { userInfo } = req.session;
+
+  const file = {
+    writer: mongoose.Types.ObjectId(userInfo._id),
+    fileName: req.files[0].filename,
+    fileSize: req.files[0].size,
+    fileType: req.files[0].mimetype,
+    realFileName: req.files[0].originalname
+  };
+
+  File.collection.insert(file, (err, result) => {
+    if (err) throw err;
+    const resultFile = result.ops[0];
+
+    Account.findByIdAndUpdate(mongoose.Types.ObjectId(userInfo._id), {
+      profileImage: resultFile.fileName
+    }, (err, account) => {
+      if (err) throw err;
+
+      if (!account) {
+        return res.status(401).json({
+          code: 2,
+          message: 'ACCOUNT NOT EXISTS'
+        });
+      }
+
+      let session = req.session;
+      session.userInfo.profileImage = resultFile.fileName;
+
+      return res.json(session.userInfo);
+    });
   });
 });
 

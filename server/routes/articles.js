@@ -3,6 +3,8 @@ import mongoose from 'mongoose';
 import Account from '../models/account';
 import Article from '../models/article';
 import File from '../models/file';
+import Comment from '../models/comment';
+import Notification from '../models/Notification';
 import multer from 'multer';
 
 const router = express.Router();
@@ -13,7 +15,8 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     const rs = Math.random().toString(36).slice(2, 10);
-    cb(null, rs + '-' + Date.now());
+    const ext = file.originalname.slice(file.originalname.lastIndexOf('.'));
+    cb(null, rs + '-' + Date.now() + ext);
   }
 });
 
@@ -28,7 +31,19 @@ const upload = multer({
     1. 등록된 게시글이 없습니다
 */
 router.get('/', (req, res) => {
-  Article.find().exec((err, articles) => {
+  let { user, search, openRange, type, page } = req.query;
+  let conditions = {};
+
+  user !== undefined ? conditions.writer = user : null;
+  search !== undefined ? conditions.tags = { $in: [new RegExp(search, 'i')]} : null;
+  openRange !== undefined ? conditions.openRange = openRange : null;
+  type !== undefined ? conditions.type = type : null;
+
+  Article.find(conditions).sort({"created": -1}).skip((Number(page)-1)*5).limit(5)
+  .populate('files')
+  .populate({ path: 'writer', select: 'profileImage fullname nickname'})
+  .populate({ path: 'comments', populate: { path: 'writer', select: 'nickname email'}})
+  .exec((err, articles) => {
     if (err) throw err;
 
     if (articles.length < 1) {
@@ -38,7 +53,14 @@ router.get('/', (req, res) => {
       });
     }
 
-    return res.json(articles);
+    const viewArticles = articles.map( (article) => {
+      return Object.assign({
+        folding: false,
+        comment: '',
+        commentActive: false
+      }, article._doc);
+    });
+    return res.json(viewArticles);
   });
 });
 
@@ -59,8 +81,12 @@ router.get('/:id', (req, res) => {
     });
   }
 
-  Article.findById(mongoose.Types.ObjectId(id)).exec((err, article) => {
-    if (err) throw err;
+  Article.findById(mongoose.Types.ObjectId(id))
+  .populate('files')
+  .populate({ path: 'writer', select: 'profileImage fullname nickname'})
+  .populate({ path: 'comments', populate: { path: 'writer', select: 'nickname email'}})
+  .exec((err, article) => {
+    if (err) throw err; 
 
     if (!article) {
       return res.status(404).json({
@@ -79,15 +105,24 @@ router.get('/:id', (req, res) => {
   ERROR CODES:
     1. 사용자 정보를 찾을 수 없습니다
     2. 로그인 후 다시 시도 바랍니다
+    3. 알 수 없는 요청 입니다 
 */
 router.post('/', upload.any(), (req, res) => {
-  const { type, data } = req.body;
+  const { type, title, content, items, tags,
+          dueDate, openRange } = req.body;
 
   // session check
   if (typeof req.session.userInfo === 'undefined') {
     return res.status(401).json({
       error: 1,
       message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+
+  if ( type !== 'post' && type !== 'bucketlist') {
+    return res.status(404).json({
+      error: 3,
+      message: '알 수 없는 요청 입니다'
     });
   }
 
@@ -110,7 +145,7 @@ router.post('/', upload.any(), (req, res) => {
     let files = [];
     req.files.forEach( reqFile => {
       const file = {
-        writer: userInfo.id,
+        writer: mongoose.Types.ObjectId(userInfo._id),
         fileName: reqFile.filename,
         fileSize: reqFile.size,
         fileType: reqFile.mimetype,
@@ -121,30 +156,56 @@ router.post('/', upload.any(), (req, res) => {
     });
 
     File.collection.insert(files, (err, result) => {
-      const articleFiles = [];
+      let articleFiles = [];
 
       if (result) {
         result.ops.forEach( file => {
-          articleFiles.push(result._id);
+          articleFiles.push(mongoose.Types.ObjectId(file._id));
         });
       }
 
-      const article = new Article({
+      let article = new Article({
         writer: userInfo._id,
-        type: data.type,
-        title: data.title,
-        content: data.content,
-        items: data.items,
-        tags: data.tags,
-        files: articleFiles,
-        dueDate: data.dueDate,
-        openRange: data.openRange
+        type: type,
+        title: title,
+        openRange: openRange
       });
 
-      article.save( err => {
+      if (type === 'post') {
+        article.content = content;
+        article.tags = tags.split(",");
+        article.files = articleFiles;
+      } else if (type === 'bucketlist') {
+        article.items = JSON.parse(items).map(item => ({
+          name: item.name,
+          done: item.done
+        }));
+        article.tags = JSON.parse(items).map(item => (item.name));
+        article.dueDate = dueDate;
+      }
+
+      article.save( (err, result) => {
         if (err) throw err;
 
-        return res.json(article);
+        console.log(result);
+
+        if (type == 'post') {
+          account.posts = [
+            ...account.posts,
+            result._id 
+          ];
+        } else if (type === 'bucketlist') {
+          account.bucketlists = [
+            ...account.bucketlists,
+            result._id
+          ];
+        }
+
+        account.save( err => {
+          if (err) throw err;
+
+          return res.json(article);
+        });
       });
     });
   });
@@ -161,12 +222,20 @@ router.post('/', upload.any(), (req, res) => {
 */
 router.put('/:id', upload.any(), (req, res) => {
   const { id } = req.params;
-  const { type, data } = req.body;
+  const { type, title, content, items, tags,
+    dueDate, openRange } = req.body;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(416).json({
       code: 1,
       message: '유효하지 않은 접근입니다'
+    });
+  }
+
+  if ( type !== 'post' && type !== 'bucketlist') {
+    return res.status(404).json({
+      error: 3,
+      message: '알 수 없는 요청 입니다'
     });
   }
 
@@ -176,6 +245,7 @@ router.put('/:id', upload.any(), (req, res) => {
       message: '사용자 정보를 찾을 수 없습니다'
     });
   }
+  
 
   const { userInfo } = req.session;
 
@@ -206,7 +276,7 @@ router.put('/:id', upload.any(), (req, res) => {
       let files = [];
       req.files.forEach( reqFile => {
         const file = {
-          writer: userInfo.id,
+          writer: mongoose.Types.ObjectId(userInfo._id),
           fileName: reqFile.filename,
           fileSize: reqFile.size,
           fileType: reqFile.mimetype,
@@ -216,37 +286,60 @@ router.put('/:id', upload.any(), (req, res) => {
         files.push(file);
       });
 
-      File.collection.insert(files, (err, result) => {
-        if (err) throw err;
-
-        const articleFiles = [];
-
-        if (result) {
-          result.ops.forEach( file => {
-            articleFiles.push(result._id);
+      if (files.length > 0) {
+        File.collection.insert(files, (err, result) => {
+          if (err) throw err;
+  
+          let articleFiles = [];
+  
+          if (result) {
+            result.ops.forEach( file => {
+              articleFiles.push(mongoose.Types.ObjectId(file._id));
+            });
+          }
+  
+          article.title = title;
+          article.openRange = openRange;
+          if (type === 'post') {
+            article.content = content;
+            article.tags = tags.split(",");
+            article.files = articleFiles;
+          } else if (type === 'bucketlist') {
+            article.items = JSON.parse(items);
+            article.dueDate = dueDate;
+          }
+          article.modified = Date.now();
+  
+          article.save( err => {
+            if (err) throw err;
+  
+            return res.json(article);
           });
+        });
+      } else {
+        article.title = title;
+        article.openRange = openRange;
+        if (type === 'post') {
+          article.content = content;
+          article.tags = tags.split(",");
+          article.files = articleFiles;
+        } else if (type === 'bucketlist') {
+          article.items = JSON.parse(items);
+          article.dueDate = dueDate;
         }
-
-        article.title = data.title;
-        article.content = data.content;
-        article.items = data.items;
-        article.tags = data.tags;
-        article.files = articleFiles;
-        article.openRange = data.openRange;
-        article.dueDate = data.dueDate;
-        article.modifed = Date.now();
+        article.modified = Date.now();
 
         article.save( err => {
           if (err) throw err;
 
           return res.json(article);
         });
-      });
+      }
     });
   });
 });
 
-/*
+/* 
   DELETE ARTICLE: DELETE /api/articles/:id
   REQUEST BODY: {}
   ERROR CODES:
@@ -287,125 +380,248 @@ router.delete('/:id', (req, res) => {
       });
     }
 
-    Article.findByIdRemove(mongoose.Types.ObjectId(id), (err, article) => {
+    Article.findByIdAndRemove(mongoose.Types.ObjectId(id), (err, article) => {
       if (err) throw err;
 
-      return res.json({
-        article
+      if (article.type === 'post') {
+        account.posts = account.posts.filter( item => item.toString() !== id );
+      } else if (article.type === 'bucketlist') {
+        account.bucketlists = account.bucketlists.filter( item => item.toString() !== id);
+      }
+
+      account.save( err => {
+        if (err) throw err;
+        
+        return res.json(article);
       });
     })
   });
 });
 
-/*
-router.get('/', (req, res) => {
-  let articles = [];
-
-  BucketList.find().limit(3).exec((err, bucketlists) => {
-    if (err) throw err;
-    articles = [].concat(bucketlists);
-
-    Post.find().limit(3).exec((err, posts) => {
-      if (err) throw err;
-      articles = articles.concat(posts);
-
-      articles.sort((a, b) => {
-        return a.created - b.created;
-      });
-      
-      const responseData = articles.map( article => {
-        return {
-          id: article._id,
-          type: article.type, // type(1: bucketlist, 2: post)
-          writer: bucketlist.writer,
-          title: bucketlist.title,
-          content: '',
-          items: bucketlist.items,
-          openRange: bucketlist.openRange,
-          folding: false,
-          chips: article.chips,
-          files: article.files,
-          likes: [],
-          comments: [],
-          comment: '',
-          commentActive: false
-        }
-      });
-
-      return res.json(articles);
-    });
-  });
-});
-
-router.get('/:type/:id', (req, res) => {
-  const { type, id } = req.params;
+router.post('/:id/likes', (req, res) => {
+  const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
     return res.status(416).json({
       code: 1,
-      message: "유효하지 않은 접근입니다"
+      message: '유효하지 않은 접근입니다'
     });
   }
 
-  if (type === "bucketlist") {
-    BucketList.findOne({_id: mongoose.Types.ObjectId(id)}).populate('writer').exec((err, bucketlist) => {
+  if (typeof req.session.userInfo === 'undefined') {
+    return res.status(401).json({
+      error: 2,
+      message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+
+  const { userInfo } = req.session;
+
+  Account.findOne({email: userInfo.email}, (err, account) => {
+    if (err) throw err;
+
+    if (!account) {
+      res.session.destroy( err => {
+        if (err) throw err;
+      });
+
+      return res.status(403).json({
+        code: 3,
+        message: '로그인 후 다시 시도 바랍니다'
+      });
+    }
+
+    Article.findById(mongoose.Types.ObjectId(id))
+    .populate('files')
+    .populate({ path: 'writer', select: 'profileImage fullname nickname'})
+    .populate({ path: 'comments', populate: { path: 'writer', select: 'nickname email'}})
+    .exec((err, article) => {
       if (err) throw err;
 
-      if (!bucketlist) {
+      if (!article) {
         return res.status(404).json({
           code: 2,
-          message: '존재하지 않는 버킷리스트 입니다'
+          message: '대상이 존재하지 않습니다'
         });
       }
 
-      return res.json({
-        id: bucketlist._id,
-        type: 1, // type(1: bucketlist, 2: post)
-        writer: bucketlist.writer,
-        title: bucketlist.title,
-        content: '',
-        items: bucketlist.items,
-        openRange: bucketlist.openRange,
-        folding: false,
-        chips: [],
-        files: [],
-        likes: [],
-        comments: [],
-        comment: '',
-        commentActive: false
-      });
-      
-    });
-  } else if (type === "post") {
-    Post.findOne({_id: mongoose.Types.ObjectId(id)}, (err, post) => {
-      if (err) throw err;
-
-      if (!post) {
-        return res.status(404).json({
-          code: 3,
-          message: '존재하지 않는 게시 글 입니다'
+      if (article.likes.indexOf(mongoose.Types.ObjectId(account._id)) > -1) {
+        article.likes = article.likes.filter( like => {
+          return JSON.stringify(like) !== JSON.stringify(account._id);
         });
-      }
+      } else {
+        article.likes = [
+          ...article.likes,
+          mongoose.Types.ObjectId(account._id)
+        ];
+      } 
 
-      return res.json({
-        id: post._id,
-        type: 2, // type(1: bucketlist, 2: post)
-        writer: post.writer,
-        title: post.title,
-        content: post.content,
-        items: [],
-        openRange: post.openRange,
-        folding: false,
-        chips: post.chips,
-        files: [],
-        likes: [],
-        comments: [],
-        comment: '',
-        commentActive: false
+      article.save( err => {
+        if (err) throw err;
+
+        // 남의 글에 댓글을 남길 경우 게시자에게 알림 전달
+        if (JSON.stringify(account._id) !== JSON.stringify(article.writer._id)) {
+          let notification = new Notification({
+            from: account._id,
+            to: article.writer._id,
+            type: 'like',
+            article: article._id
+          });
+
+          notification.save( err => {
+            if (err) throw err;
+          });
+        }
+
+        return res.json(article);
       })
     });
-  }
+  });
 });
-*/
+
+router.delete('/:id/comments/:commentId', (req, res) => {
+  const { id, commentId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(416).json({
+      code: 1,
+      message: '유효하지 않은 접근입니다'
+    });
+  }
+
+  if (typeof req.session.userInfo === 'undefined') {
+    return res.status(401).json({
+      code: 2,
+      message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+
+  const { userInfo } = req.session;
+
+  Account.findOne({email: userInfo.email}, (err, account) => {
+    if (err) throw err;
+
+    if (!account) {
+      res.session.destroy( err => {
+        if (err) throw err;
+      });
+
+      return res.status(403).json({
+        code: 3,
+        message: '로그인 후 다시 시도 바랍니다'
+      });
+    }
+
+    Comment.findByIdAndRemove(mongoose.Types.ObjectId(commentId), (err) => {
+       if (err) throw err; 
+
+       Article.findById(mongoose.Types.ObjectId(id))
+      .populate('files')
+      .populate({ path: 'writer', select: 'profileImage fullname, nickname'})
+      .populate({ path: 'comments', populate: { path: 'writer', select: 'nickname email'}})
+      .exec((err, article) => {
+        if (err) throw err;
+
+        if (!article) {
+          return res.status(404).json({
+            code: 2,
+            message: '대상이 존재하지 않습니다'
+          });
+        }
+
+        return res.json(article);
+      });
+    });
+  });
+});
+
+router.post('/:id/comments', (req, res) => {
+  const { id } = req.params;
+  const { content } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(416).json({
+      code: 1,
+      message: '유효하지 않은 접근입니다'
+    });
+  }
+
+  if (typeof req.session.userInfo === 'undefined') {
+    return res.status(401).json({
+      error: 2,
+      message: '사용자 정보를 찾을 수 없습니다'
+    });
+  }
+
+  const { userInfo } = req.session;
+
+  Account.findOne({email: userInfo.email}, (err, account) => {
+    if (err) throw err;
+
+    if (!account) {
+      res.session.destroy( err => {
+        if (err) throw err;
+      });
+
+      return res.status(403).json({
+        code: 3,
+        message: '로그인 후 다시 시도 바랍니다'
+      });
+    }
+
+    Article.findById(mongoose.Types.ObjectId(id))
+    .populate('files')
+    .populate({ path: 'writer', select: 'profileImage fullname nickname'})
+    .populate({ path: 'comments', populate: { path: 'writer', select: 'nickname email'}})
+    .exec((err, article) => {
+      if (err) throw err;
+
+      if (!article) {
+        return res.status(404).json({
+          code: 2,
+          message: '대상이 존재하지 않습니다'
+        });
+      }
+
+      let comment = new Comment({ 
+        article: mongoose.Types.ObjectId(article._id),
+        writer: mongoose.Types.ObjectId(account._id),
+        content: content
+      });
+
+      comment.save( (err, result) => {
+        if (err) throw err;
+
+        result.populate({ path: 'writer', select: 'nickname email' }).execPopulate()
+        .then(() => {
+          article.comments = [
+            ...article.comments,
+            result
+          ];
+  
+          article.save( err => {
+            if (err) throw err;
+
+            // 남의 글에 댓글을 남길 경우 게시자에게 알림 전달
+            if (JSON.stringify(account._id) !== JSON.stringify(article.writer._id)) {
+              let notification = new Notification({
+                from: account._id,
+                to: article.writer._id,
+                type: 'comment',
+                article: article._id
+              });
+  
+              notification.save( err => {
+                if (err) throw err;
+              });
+            }
+
+            return res.json(article);
+          });
+        });
+      });
+    });
+  });
+});
 
 export default router;

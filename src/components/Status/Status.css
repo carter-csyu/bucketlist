@@ -15,6 +15,10 @@
   background-color: #e1f5fe ;
 }
 
+.Status .collection .collection-item.read {
+  background-color: #fafafa;
+}
+
 .Status .collection .collection-item.active {
   background-color: #1a237e;
   color: #ffffff;

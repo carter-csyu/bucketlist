@@ -1,27 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import './Search.css';
-import ArticleList from 'components/Article/ArticleList';
+import ArticleListContainer from 'containers/Article/ArticleListContainer';
 
 const Search = ({
   search,
   onSearchChange,
   onSearchKeyDown,
-
-  session,
-  articles,
-  onChange,
-  onKeyDown,
-  onAddComment,
-  onClickLike,
-  onClickComment,
-  onRemoveComment,
-  onClickShare,
-  onRouteToArticle,
-  onCopyLink,
-  onFollowStatus,
-  onClickViewMore
 }) => {
+  const action = {
+    name: 'SEARCH'
+  };
+
   return (
     <div>
       <nav className="search-bar white">
@@ -41,23 +31,12 @@ const Search = ({
           </div>
         </div>
       </nav>
-      { 
+      <ArticleListContainer action={action}/>
+      {
+        /*
         articles.length > 0 
         ? (
-            <ArticleList
-              session={session}
-              articles={articles}
-              onClickLike={onClickLike}
-              onClickComment={onClickComment}
-              onClickShare={onClickShare}
-              onRouteToArticle={onRouteToArticle}
-              onCopyLink={onCopyLink}
-              onFollowStatus={onFollowStatus}
-              onChange={onChange}
-              onKeyDown={onKeyDown}
-              onAddComment={onAddComment}
-              onRemoveComment={onRemoveComment}
-              onClickViewMore={onClickViewMore}
+            <ArticleListContainer
             />
           )
         : (
@@ -65,6 +44,7 @@ const Search = ({
               검색 결과 없음
             </h5>
           )
+        */
       }
       
     </div>
@@ -80,7 +60,8 @@ Search.propTypes = {
     email: PropTypes.string,
     nickname: PropTypes.string
   }),
-  articles: PropTypes.array,  
+  articles: PropTypes.array,
+  onRemoveArticle: PropTypes.func,
   onChange: PropTypes.func,
   onKeyDown: PropTypes.func,
   onAddComment: PropTypes.func,
@@ -100,6 +81,7 @@ Search.defaultProps = {
 
   session: {},
   articles: [],
+  onRemoveArticle: () => console.warn('onRemoveArticle not defined'),
   onChange: () => console.warn('onChange not defined'),
   onKeyDown: () => console.warn('onKeyDown not defined'),
   onAddComment: () => console.warn('onAddComment not defined'),

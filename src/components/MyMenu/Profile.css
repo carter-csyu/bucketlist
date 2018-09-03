@@ -1,0 +1,75 @@
+.Profile article {
+  padding-top: 1rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.Profile h5 {
+  font-size: 18px;
+}
+
+.Profile .profile-btn {
+  width: 100%;
+}
+
+
+.Profile .user-profile {
+  min-height: 100px;
+  display: flex;
+}
+
+.Profile .user-profile > div:first-child {
+  padding: 10px 0;
+}
+
+.Profile .user-profile > div:nth-child(2) {
+  padding: 10px 15px;
+  flex: 1;
+}
+
+.Profile .user-profile > div:nth-child(2) h6 {
+  font-size: 22px;
+  margin-top: 0px;
+}
+
+.Profile .user-profile > div:nth-child(2) .change-btn,
+.Profile .user-profile > div:nth-child(2) .delete-btn {
+  text-align: center;
+  border: 1px solid #dbdbdb;
+  line-height: 28px;
+  height: 28px;
+  width: 100%;
+}
+
+.Profile .user-profile > div:nth-child(2) .change-btn {
+  margin-right: 5px;
+}
+
+.Profile .user-profile > div:nth-child(2) .delete-btn {
+  margin-left: 5px;
+  color: #b71c1c;
+}
+
+
+.Profile .user-profile > div:nth-child(2) .btns {
+  display: flex;
+}
+
+.Profile .user-profile > div:nth-child(2) .btns > div {
+  flex: 1
+}
+
+.Profile .user-profile .profile-image {
+  height: 60px;
+  width: 60px;
+}
+
+.Profile input[type="file"] {
+  position: absolute; 
+  width: 1px; 
+  height: 1px; 
+  padding: 0; 
+  margin: -1px; 
+  overflow: hidden; 
+  clip: rect(0,0,0,0); border: 0; 
+}

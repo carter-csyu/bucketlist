@@ -40,6 +40,7 @@ app.use(session({
  
 // routers
 app.use('/', express.static(__dirname + './../public'));
+app.use('/images', express.static(path.join(__dirname, 'uploads')));
 app.use('/api', api);
 
 

@@ -3,22 +3,13 @@ import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import './Home.css';
 import ArticleList from 'components/Article/ArticleList';
+import ArticleListContainer from 'containers/Article/ArticleListContainer';
 
-const Home = ({
-  session,
-  articles,
-  onChange,
-  onKeyDown,
-  onAddComment,
-  onClickLike,
-  onClickComment,
-  onRemoveComment,
-  onClickShare,
-  onRouteToArticle,
-  onCopyLink,
-  onFollowStatus,
-  onClickViewMore
-}) => {
+const Home = () => {
+  const action = {
+    name: 'HOME'
+  };
+  
   return (
     <div>
       <header className="page-header">
@@ -41,20 +32,8 @@ const Home = ({
           <li><a>취소</a></li>
         </ul>
       </header>
-      <ArticleList
-        session={session}
-        articles={articles}
-        onClickLike={onClickLike}
-        onClickComment={onClickComment}
-        onClickShare={onClickShare}
-        onRouteToArticle={onRouteToArticle}
-        onCopyLink={onCopyLink}
-        onFollowStatus={onFollowStatus}
-        onChange={onChange}
-        onKeyDown={onKeyDown}
-        onAddComment={onAddComment}
-        onRemoveComment={onRemoveComment}
-        onClickViewMore={onClickViewMore}
+      <ArticleListContainer
+        action={action}
       />
     </div>
   )
@@ -65,7 +44,8 @@ Home.propTypes = {
     email: PropTypes.string,
     nickname: PropTypes.string
   }),
-  articles: PropTypes.array,  
+  articles: PropTypes.array,
+  onRemoveArticle: PropTypes.func,  
   onChange: PropTypes.func,
   onKeyDown: PropTypes.func,
   onAddComment: PropTypes.func,
@@ -73,7 +53,6 @@ Home.propTypes = {
   onClickComment: PropTypes.func,
   onClickShare: PropTypes.func,
   onRouteToArticle: PropTypes.func,
-  onCopyLink: PropTypes.func,
   onFollowStatus: PropTypes.func,
   onClickViewMore: PropTypes.func,
 };
@@ -81,6 +60,7 @@ Home.propTypes = {
 Home.defaultProps = {
   session: {},
   articles: [],
+  onRemoveArticle: () => console.warn('onRemoveArticle not defined'),
   onChange: () => console.warn('onChange not defined'),
   onKeyDown: () => console.warn('onKeyDown not defined'),
   onAddComment: () => console.warn('onAddComment not defined'),
@@ -88,7 +68,6 @@ Home.defaultProps = {
   onClickComment: () => console.warn('onclickComment not defined'),
   onClickShare: () => console.warn('onClickShare not defined'),
   onRouteToArticle: () => console.warn('onRouteToArticle not defined'),
-  onCopyLink: () => console.warn('onCopyLink not defined'),
   onFollowStatus: () => console.warn('onFollowStatus not defined'),
   onClickViewMore: () => console.warn('onClickViewMore not defined')
 };

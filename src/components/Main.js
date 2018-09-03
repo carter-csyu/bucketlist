@@ -5,7 +5,8 @@ import Bottom from './Bottom';
 
 const Main = ({
   active,
-  content
+  content,
+  session
 }) => {
   return (
     <div className="main">
@@ -14,6 +15,7 @@ const Main = ({
       </main>
       <Bottom 
         active={active}
+        session={session}
       />
     </div>
   )

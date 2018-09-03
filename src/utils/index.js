@@ -7,3 +7,16 @@ export function emailRe(email) {
     return true;
   }
 }
+
+export function getDate(dateStr) {
+  const datetime = new Date(dateStr);
+
+  const yyyy = datetime.getFullYear();
+  const mm = datetime.getMonth() + 1;
+  const dd = datetime.getDate();
+  const hh24 = datetime.getHours();
+  const mi = datetime.getMinutes();
+  const ss = datetime.getSeconds();
+
+  return `${yyyy}/${mm}/${dd} ${hh24}:${mi}:${ss}`;
+}

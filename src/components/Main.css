@@ -10,6 +10,7 @@
 }
 
 .page-header, .page-sub-header {
+  z-index: 2;
   padding: 10px;
   border-bottom: 1px solid #eeeeee;
   display: flex;
@@ -49,8 +50,9 @@
 .footer {
   display: flex;
   padding: 0;
-  border-top: 1px solid #eeeeee; 
+  border-top: 1px solid #eeeeee;
 
+  z-index: 2;
   position: sticky;
   bottom: -2px;
 }

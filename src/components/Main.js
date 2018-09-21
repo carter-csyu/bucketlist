@@ -6,7 +6,8 @@ import Bottom from './Bottom';
 const Main = ({
   active,
   content,
-  session
+  session,
+  unread
 }) => {
   return (
     <div className="main">
@@ -16,6 +17,7 @@ const Main = ({
       <Bottom 
         active={active}
         session={session}
+        unread={unread}
       />
     </div>
   )
@@ -24,11 +26,13 @@ const Main = ({
 Main.propTypes = {
   active: PropTypes.string,
   content: PropTypes.element,
+  unread: PropTypes.number
 };
 
 Main.defaultProps = {
+  unread: 0,
   active: 1,
-  content: (<div>이게뭐야</div>)
+  content: (<div>Bucket List</div>)
 };
 
 export default Main;

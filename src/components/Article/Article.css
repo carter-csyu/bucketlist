@@ -3,7 +3,7 @@
   margin-bottom: 20px;
 }
 
-.article-wrapper a.writer {
+.article-wrapper header.writer {
   padding: 16px;
   height: 60px;
   display: flex;
@@ -11,22 +11,22 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
-.article-wrapper a.writer img {
+.article-wrapper header.writer img {
   height: 30px;
   width: 30px;
 }
 
-.article-wrapper a.writer .username {
+.article-wrapper header.writer .username {
   margin-left: 5px;
   flex: 1;
 }
 
-.article-wrapper a.writer .btn-more {
+.article-wrapper header.writer .btn-more {
   display: flex;
   align-items: center;
 }
 
-.article-wrapper a.writer .dropdown-content {
+.article-wrapper header.writer .dropdown-content {
   width: 200px !important;
 }
 
@@ -39,6 +39,12 @@
   margin-top: 6px;
   font-weight: 600;
   font-size: 1.2rem;
+}
+
+.info-title .article-created {
+  float: right;
+  font-size: 0.8em;
+  font-weight: normal;
 }
 
 .info-content .collection .bucketlist-item {

@@ -75,6 +75,22 @@
   color: #3949ab !important;
 }
 
+.footer-items .notification-badge {
+  padding: 0;
+  margin: 0;
+  position: absolute;
+  top: 10px;
+  left: 51%;
+  max-width: 20px;
+  min-width: 20px;
+  max-height: 20px;
+  min-height: 20px;
+  border-radius: 50%;
+  font-size: 0.9em;
+  line-height: 19px;
+  color: white;
+}
+
 
 .dropdown-content li > span, .dropdown-content li > a {
   color: #1a237e;

@@ -3,8 +3,13 @@ import { Link } from 'react-router-dom';
 
 const Bottom = ({
   active,
-  session
+  session,
+  unread
 }) => {
+  const badge = unread > 0 
+  ? <span className="red darken-1 badge notification-badge">{unread}</span>
+  : <div></div>
+
   return (
     <footer className="page-footer footer white">
         <div className="footer-items">
@@ -26,6 +31,7 @@ const Bottom = ({
             <i className={`material-icons ${active === '/status' && "active"}`}>
               notifications
             </i>
+            {badge}
           </Link>
         </div>
         <div className="footer-items">

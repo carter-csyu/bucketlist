@@ -459,18 +459,28 @@ router.post('/:id/likes', (req, res) => {
       article.save( err => {
         if (err) throw err;
 
-        // 남의 글에 댓글을 남길 경우 게시자에게 알림 전달
+        // 남의 글에 좋아요를 누를 경우 게시자에게 알림 전달
         if (JSON.stringify(account._id) !== JSON.stringify(article.writer._id)) {
-          let notification = new Notification({
-            from: account._id,
-            to: article.writer._id,
-            type: 'like',
-            article: article._id
-          });
 
-          notification.save( err => {
-            if (err) throw err;
-          });
+          Notifications.find({
+            type: 'like',
+            article: mongoose.Types.ObjectId(article._id)
+          }).count().then(
+            count => {
+              if (count < 1 ) {
+                let notification = new Notification({
+                  from: account._id,
+                  to: article.writer._id,
+                  type: 'like',
+                  article: article._id
+                });
+      
+                notification.save( err => {
+                  if (err) throw err;
+                });
+              }
+            }
+          )
         }
 
         return res.json(article);
@@ -602,18 +612,29 @@ router.post('/:id/comments', (req, res) => {
           article.save( err => {
             if (err) throw err;
 
-            // 남의 글에 댓글을 남길 경우 게시자에게 알림 전달
+            // 남의 글에 좋아요를 누를 경우 게시자에게 알림 전달
             if (JSON.stringify(account._id) !== JSON.stringify(article.writer._id)) {
-              let notification = new Notification({
-                from: account._id,
-                to: article.writer._id,
+
+              Notifications.find({
                 type: 'comment',
-                article: article._id
-              });
-  
-              notification.save( err => {
-                if (err) throw err;
-              });
+                article: mongoose.Types.ObjectId(article._id),
+                read: false
+              }).count().then(
+                count => {
+                  if (count < 1 ) {
+                    let notification = new Notification({
+                      from: account._id,
+                      to: article.writer._id,
+                      type: 'comment',
+                      article: article._id
+                    });
+          
+                    notification.save( err => {
+                      if (err) throw err;
+                    });
+                  }
+                }
+              )
             }
 
             return res.json(article);

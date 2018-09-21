@@ -11,11 +11,16 @@ const READ_SUCCESS = 'notification/READ_SUCCESS';
 const READ_FAILURE = 'notification/READ_FAILURE';
 
 // 액션 생성 함수
-export const getNotificationsRequest = () => {
+export const getNotificationsRequest = (options = {}) => {
   return (dispatch) => {
+    const { read } = options;
+    let query = JSON.stringify(options) !== '{}' ? '?' : '';
+
+    query += read === undefined ? '' : `&read=${read}`;
+
     dispatch(getNotifications());
 
-    return axios.get(`/api/notifications/`)
+    return axios.get(`/api/notifications/${query}`)
     .then(response => {
       dispatch(getNotificationsSuccess(response.data));
     }).catch(error => {
@@ -46,7 +51,8 @@ export const readFailure = createAction(READ_FAILURE);
 const initialState = {
   status: 'INIT',
   error: {},
-  notifications: []
+  notifications: [],
+  unread: 0
 };
 
 export default handleActions({
@@ -54,14 +60,26 @@ export default handleActions({
     ...state,
     status: 'WAITING'
   }),
-  [GET_NOTIFICATIONS_SUCCESS]: (state, { payload: notifications }) => ({
-    ...state,
-    status: 'SUCCESS',
-    notifications
-  }),
+  [GET_NOTIFICATIONS_SUCCESS]: (state, { payload: notifications }) => {
+    const unread = notifications.reduce((acc, current) => {
+      if (!current.read) {
+        return acc + 1;
+      } else {
+        return acc;
+      }
+    }, 0);
+
+    return {
+      ...state,
+      status: 'SUCCESS',
+      unread: unread,
+      notifications
+    };
+  },
   [GET_NOTIFICATIONS_FAILURE]: (state, { payload: error }) => ({
     ...state,
     status: 'FAILURE',
+    unread: 0,
     error
   }),
 
@@ -71,10 +89,11 @@ export default handleActions({
   }),
   [READ_SUCCESS]: (state, { payload: notification }) => {
     const index = state.notifications.findIndex( item => item._id === notification._id);
-  
+
     return {
       ...state,
       status: 'SUCCESS',
+      unread: state.unread > 0 ? state.unread -1 : 0,
       notifications: [
         ...state.notifications.slice(0, index),
         notification,
@@ -85,6 +104,7 @@ export default handleActions({
   [READ_FAILURE]: (state, { payload: error }) => ({
     ...state,
     status: 'FAILURE',
+    unread: 0,
     error
   })
 }, initialState);

@@ -20,3 +20,14 @@ export function getDate(dateStr) {
 
   return `${yyyy}/${mm}/${dd} ${hh24}:${mi}:${ss}`;
 }
+
+export const timeagoFormatter = (value, unit, suffix, date) => {
+  const customUnit = unit === 'second' ? '초'
+  : unit === 'minute' ? '분'
+  : unit === 'hour' ? '시간'
+  : unit === 'day' ? '일'
+  : unit === 'week' ? '주'
+  : unit === 'month' ? '달' : '년';
+
+  return `${value}${customUnit} 전`;
+}

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import Main from 'components/Main';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import * as ArticleActions from 'store/modules/article';
+import * as articleActions from 'store/modules/article';
+import * as notificationActions from 'store/modules/notification';
 
 import HomeContainer from 'containers/Home/HomeContainer';
 import SearchContainer from 'containers/Search/SearchContainer';
@@ -29,8 +30,8 @@ class MainContainer extends Component {
   
   static getDerivedStateFromProps(nextProps, prevState) {
     if (nextProps.match.url !== prevState.active) {
-      const { articleActions } = nextProps;
-      articleActions.clearArticle();
+      const { ArticleActions } = nextProps;
+      ArticleActions.clearArticle();
       
       return {
         active: nextProps.match.url
@@ -41,12 +42,25 @@ class MainContainer extends Component {
   }
   
   componentDidMount() {
+    const { NotificationActions } = this.props;
     this.handleUpdateLink();
+
+    NotificationActions.getNotificationsRequest().then(() => {
+      const { status, error } = this.props;
+
+      if ( status === "FAILURE") {
+        window.M.toast({
+          html: error.message !== undefined ? error.message : '오류가 발생하였습니다'
+        });
+
+        return;
+      }
+    });
   }
 
   render() {
     const { active } = this.state;
-    const { match, session } = this.props;
+    const { match, session, unread } = this.props;
 
     const {
       handleClickMenu
@@ -69,16 +83,21 @@ class MainContainer extends Component {
         active={active}
         session={session}
         content={content}
+        unread={unread}
       />
     );
   }
 }
 
 export default connect(
-  ({auth}) => ({
-    session: auth.user.info
+  ({auth, notification}) => ({
+    session: auth.user.info,
+    unread: notification.unread,
+    status: notification.status,
+    error: notification.error
   }),
   (dispatch) => ({
-    articleActions: bindActionCreators(ArticleActions, dispatch)
+    ArticleActions: bindActionCreators(articleActions, dispatch),
+    NotificationActions: bindActionCreators(notificationActions, dispatch)
   })
 )(MainContainer);

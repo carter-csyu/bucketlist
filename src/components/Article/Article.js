@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import TimeAgo from 'react-timeago';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { Link } from 'react-router-dom';
+import { timeagoFormatter } from 'utils';
 import './Article.css';
 
 const Article = ({
@@ -21,7 +23,7 @@ const Article = ({
 }) => {
   const { 
     _id: id, type, writer, title, content, items, folding, openRange, 
-    chips, files, likes, comments, comment, commentActive } = article;
+    chips, files, likes, comments, comment, commentActive, created } = article;
   
   const { protocol, host, pathname } = window.location;
   const url = `${protocol}//${host}`;
@@ -154,13 +156,13 @@ const Article = ({
   
   return (
     <article key={id} className="article-wrapper">
-      <Link className="writer" to={`${writer.nickname}/bucketlist`}>
+      <header className="writer">
         <img 
           className="circle responsive-img"
           src={`/images/profiles/${writer.profileImage}`} 
           alt={writer.nickname} />
         <div className="username">
-          <a className="grey-text text-darken-4">{writer.nickname}</a>
+          <Link className="grey-text text-darken-4" to={`${writer.nickname}`}>{writer.nickname}</Link>
         </div> 
         <div 
           className="btn-more dropdown-trigger"
@@ -176,10 +178,15 @@ const Article = ({
         </div>
         {/* 드롭다운 리스트 */}
         {dropdownList}
-      </Link>
+      </header>
       <div className="info">
         <div className="info-title">
           {title}
+
+          <TimeAgo 
+            className='article-created' 
+            date={new Date(created)}
+            formatter={timeagoFormatter} />
         </div>
         <div className="info-content">
           { type === 'bucketlist'

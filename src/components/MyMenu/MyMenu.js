@@ -101,7 +101,9 @@ const MyMenu = ({
         <section>
           { type === 'bucketlist' || type === 'post'
             ? <ArticleListContainer action={action} type={type} people={people} />
-            : <div>팔로워 / 팔로잉</div>}
+            : type === 'follower' || type === 'followee'
+            ? <div>팔로워 / 팔로잉</div>
+            : <div></div> }
         </section>
       </main>
     </div>

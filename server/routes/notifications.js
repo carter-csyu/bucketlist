@@ -7,6 +7,11 @@ import Notification from '../models/Notification';
 const router = express.Router();
 
 router.get('/', (req, res) => {
+  let { read } = req.query;
+  let conditions = {};
+
+  read !== undefined && (conditions.read = read);
+
   // session check
   if (typeof req.session.userInfo === 'undefined') {
     return res.status(401).json({
@@ -31,7 +36,9 @@ router.get('/', (req, res) => {
       });
     }
 
-    Notification.find({ to: mongoose.Types.ObjectId(account._id) })
+    conditions.to = mongoose.Types.ObjectId(account._id);
+
+    Notification.find(conditions)
     .populate({ path: 'from', select: 'profileImage fullname nickname'})
     .sort({created: -1})
     .exec((err, result) => {
